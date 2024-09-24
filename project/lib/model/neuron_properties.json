@@ -1,0 +1,15 @@
+{
+    "synapses": 20,
+    "activeSynapse": 1,
+    "poissonPatternSpread": 50,
+    "percentOfExcititorySynapses": 80.0,
+    "hertz": 5,
+    "poissonPatternMax": 300.0,
+    "poissonPatternMin": 50.0,
+    "noiseLambda": 1000.0,
+    "noiseCount": 10,
+    "neuron": {
+        "threshold": 15.0,
+        "refractoryPeriod": 3.0
+    }
+}
