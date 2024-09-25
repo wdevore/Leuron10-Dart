@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../appstate.dart';
 import '../misc/maths.dart';
 import '../model/app_properties.dart';
+import '../samples/input_sample.dart';
 import '../samples/samples.dart';
 import '../samples/soma_sample.dart';
 import '../samples/synapse_sample.dart';
@@ -117,21 +118,21 @@ class SpikePainter extends CustomPainter {
     // range-end. The data width should match width of the Input sample
     // data because the noise is "mixed in" with the input samples.
 
-    List<ListQueue<SynapseSample>?> synSamples = appState.samples.synSamples;
+    List<ListQueue<InputSample>?> noiseSamples = appState.samples.noiseSamples;
     int rangeEnd = appProperties.rangeStart + appProperties.rangeWidth;
 
-    for (var synapse in synSamples) {
+    for (var synapse in noiseSamples) {
       if (synapse != null && synapse.isNotEmpty) {
         for (var t = appProperties.rangeStart; t < rangeEnd; t++) {
-          // if (synapse[t].input == 1) {
-          //   // Spiked?
-          //   // The sample value needs to be mapped
-          //   double uX = Maths.mapSampleToUnit(t.toDouble(),
-          //       appProperties.rangeStart.toDouble(), rangeEnd.toDouble());
-          //   double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
-          //   var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
-          //   points.add(Offset(lX, lY));
-          // }
+          if (synapse.elementAt(t).input == 1) {
+            // Spiked?
+            // The sample value needs to be mapped
+            double uX = Maths.mapSampleToUnit(t.toDouble(),
+                appProperties.rangeStart.toDouble(), rangeEnd.toDouble());
+            double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
+            var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
+            points.add(Offset(lX, lY));
+          }
           // Update row/y value and offset by a few pixels
           wY += spikeRowOffset;
         }

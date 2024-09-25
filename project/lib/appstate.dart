@@ -99,7 +99,7 @@ class AppState extends ChangeNotifier {
     _loadSynapsePresets(synapsePresetsFile);
     debugPrint("Synapse presets loaded");
 
-    neuron.attachNoise(noises);
+    neuron.attachNoise(noises, this);
     debugPrint("Noise attached to neuron");
 
     neuron.attachStimulus(stimuli);
@@ -196,8 +196,8 @@ class AppState extends ChangeNotifier {
       if (json.isNotEmpty) {
         Map<String, dynamic> map = jsonDecode(json);
         synapsePresets = SynapsePresets.fromJson(map);
-        // Load presets into simulation model
-        neuron.loadPresets(map, this);
+        // Load presets into simulation model, but doesn't attach stimulus.
+        neuron.attachPresets(map, this);
       }
     } catch (e) {
       debugPrint(e.toString());
