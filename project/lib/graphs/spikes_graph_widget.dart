@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -94,7 +95,7 @@ class SpikePainter extends CustomPainter {
   // which then allows to map to graph-space.
   void paint(Canvas canvas, Size size) {
     _drawNoise(canvas, size, strokeWidth, spikeRowOffset);
-    // _drawStimulus(canvas, size, strokeWidth, spikeRowOffset);
+    _drawStimulus(canvas, size, strokeWidth, spikeRowOffset);
     // _drawSomaSpikes(canvas, size, strokeWidth, appState);
   }
 
@@ -118,25 +119,23 @@ class SpikePainter extends CustomPainter {
     // range-end. The data width should match width of the Input sample
     // data because the noise is "mixed in" with the input samples.
 
-    List<ListQueue<InputSample>?> noiseSamples = appState.samples.noiseSamples;
-    int rangeEnd = appProperties.rangeStart + appProperties.rangeWidth;
+    List<ListQueue<InputSample>> noiseSamples = appState.samples.noiseSamples;
+    var (rangeStart, rangeEnd) = calcRange();
 
-    for (var synapse in noiseSamples) {
-      if (synapse != null && synapse.isNotEmpty) {
-        for (var t = appProperties.rangeStart; t < rangeEnd; t++) {
-          if (synapse.elementAt(t).input == 1) {
-            // Spiked?
-            // The sample value needs to be mapped
-            double uX = Maths.mapSampleToUnit(t.toDouble(),
-                appProperties.rangeStart.toDouble(), rangeEnd.toDouble());
-            double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
-            var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
-            points.add(Offset(lX, lY));
-          }
-          // Update row/y value and offset by a few pixels
-          wY += spikeRowOffset;
+    for (ListQueue<InputSample> queue in noiseSamples) {
+      for (var t = rangeStart; t < rangeEnd; t++) {
+        // Spiked?
+        if (queue.elementAt(t).input == 1) {
+          // The sample value needs to be mapped
+          final double uX = Maths.mapSampleToUnit(
+              t.toDouble(), rangeStart.toDouble(), rangeEnd.toDouble());
+          final double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
+          var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
+          points.add(Offset(lX, lY));
         }
       }
+      // Update row/y value and offset by a few pixels
+      wY += spikeRowOffset;
     }
 
     // Now plot all mapped points.
@@ -158,35 +157,24 @@ class SpikePainter extends CustomPainter {
     // range-end. The data width should match width of the Input sample
     // data because the noise is "mixed in" with the input samples.
 
-    // How many synapses (aka channels) do we have.
-    // int channelCnt = environment.synapses.length;
+    List<ListQueue<InputSample>> stimulusSamples =
+        appState.samples.stimulusSamples;
+    var (rangeStart, rangeEnd) = calcRange();
 
-    // Channels 0-9 are stimulus, 10-19 are noise
-    int channel = 0;
-    List<ListQueue<SynapseSample>?> synSamples = appState.samples.synSamples;
-    int rangeEnd = appProperties.rangeStart + appProperties.rangeWidth;
-
-    for (var synapse in synSamples) {
-      if (synapse != null) {
-        if (synapse.isNotEmpty) {
-          if (channel < 10) {
-            for (var t = appProperties.rangeStart; t < rangeEnd; t++) {
-              // if (synapse[t].input == 1) {
-              //   // Spiked?
-              //   // The sample value needs to be mapped
-              //   double uX = Maths.mapSampleToUnit(t.toDouble(),
-              //       appProperties.rangeStart.toDouble(), rangeEnd.toDouble());
-              //   double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
-              //   var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
-              //   points.add(Offset(lX, lY));
-              // }
-            }
-            // Update row/y value and offset by a few pixels
-            wY += spikeRowOffset;
-          }
+    for (ListQueue<InputSample> queue in stimulusSamples) {
+      for (var t = rangeStart; t < rangeEnd; t++) {
+        // Spiked?
+        if (queue.elementAt(t).input == 1) {
+          // The sample value needs to be mapped
+          final double uX = Maths.mapSampleToUnit(
+              t.toDouble(), rangeStart.toDouble(), rangeEnd.toDouble());
+          final double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
+          var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
+          points.add(Offset(lX, lY));
         }
       }
-      channel++;
+      // Update row/y value and offset by a few pixels
+      wY += spikeRowOffset;
     }
 
     // Now plot all mapped points.
@@ -222,5 +210,20 @@ class SpikePainter extends CustomPainter {
         canvas.drawLine(Offset(lX, lY), Offset(lX, lY - 10), someSpikePaint);
       }
     }
+  }
+
+  (int, int) calcRange() {
+    final int queueDepth = appProperties.queueDepth;
+    final int rangeWidth = appProperties.rangeWidth;
+    final int rangeStartHalt = queueDepth - rangeWidth;
+
+    int rangeStart = appProperties.rangeStart;
+    rangeStart = min(rangeStartHalt, rangeStart);
+
+    int rangeEnd = rangeStart + rangeWidth;
+    // The end can't exceed queueDepth
+    rangeEnd = min(rangeEnd, queueDepth);
+
+    return (rangeStart, rangeEnd);
   }
 }

@@ -38,7 +38,7 @@ class Samples {
   Samples();
 
   factory Samples.create() {
-    Samples sam = Samples()..reset();
+    Samples sam = Samples();
     return sam;
   }
 

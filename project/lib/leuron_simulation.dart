@@ -42,6 +42,8 @@ class LeuronSimulation {
     // oneMillisecondCnt = 0.0;
   }
 
+  bool get isRunning => running;
+
   void start() => running = true;
 
   void stop() => running = false;
@@ -67,6 +69,18 @@ class LeuronSimulation {
 
       // Triggers display update
       appState.update();
+
+      // Step all streams. This causes each stream to update and move
+      // its internal value to its output for the next integration.
+      for (var noise in appState.noises) {
+        noise.step();
+      }
+
+      for (var stimulus in appState.stimuli) {
+        stimulus.step();
+      }
+
+      appState.neuron.step();
 
       await Future.delayed(delayDuration);
 

@@ -137,7 +137,7 @@ class PoissonStream implements IBitStream {
 
   @override
   step() {
-    if (isi == 0) {
+    if (isi <= 0) {
       // Time to generate a spike
       isi = next();
       outputSpike = 1;

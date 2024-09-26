@@ -11,7 +11,7 @@
   "scroll": 0.0,
   "dataOutputPath": "/media/RAMDisk/",
   "rangeStart": 0,
-  "rangeWidth": 1000,
+  "rangeWidth": 3500,
   "queueDepth": 4000,
   "sourceStimulus": "stim_2",
   "stimulusScaler": 10,

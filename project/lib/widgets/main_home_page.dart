@@ -34,8 +34,12 @@ class _MainHomePageState extends State<MainHomePage> {
           ElevatedButton(
             onPressed: () {
               // Create Start simulation
-              appState.simulation.start();
-              appState.simulation.run();
+              if (appState.simulation.isRunning) {
+                appState.simulation.stop();
+              } else {
+                appState.simulation.start();
+                appState.simulation.run();
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange.shade50,
@@ -44,9 +48,14 @@ class _MainHomePageState extends State<MainHomePage> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            child: const Tooltip(
-              message: 'Click to Begin simulation.',
-              child: Text('Simulate'),
+            child: Tooltip(
+              message: 'Click to Toggle simulation.',
+              child: Consumer<AppState>(
+                builder: (BuildContext context, AppState value, Widget? child) {
+                  return Text(
+                      appState.simulation.isRunning ? 'Pause' : 'Simulate');
+                },
+              ),
             ),
           ),
           const SizedBox(width: 10),

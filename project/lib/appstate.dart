@@ -69,6 +69,7 @@ class AppState extends ChangeNotifier {
     // Some properties can be used immediately. This should be
     // set 'before' Samples is configured.
     samples.queueDepth = properties.queueDepth;
+    samples.reset();
 
     filePath = p.join(Directory.current.path, modelFile);
     map = await IoUtils.importData(filePath);
