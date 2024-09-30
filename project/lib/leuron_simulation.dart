@@ -1,7 +1,6 @@
 // Each step in our simulation moves time forward by 0.1ms
 
 import 'appstate.dart';
-import 'sim_components/neuron.dart';
 
 class LeuronSimulation {
   late AppState appState;
@@ -15,7 +14,7 @@ class LeuronSimulation {
 
   //  Time clocks:
   // [loopRate] controls simulation delay loop in 1ms sizes.
-  int loopRate = 1; // N-ms
+  int loopRate = 1000; // N-us
 
   /// Sub millisecond step size
   double stepRate = 0.1; // simulation clock 0.1ms = 100us
@@ -49,7 +48,7 @@ class LeuronSimulation {
   void stop() => running = false;
 
   void run() async {
-    Duration delayDuration = Duration(milliseconds: loopRate);
+    Duration delayDuration = Duration(microseconds: loopRate);
 
     Future.doWhile(() async {
       // Perform a single step of the simulation.

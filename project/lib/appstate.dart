@@ -26,6 +26,7 @@ class AppState extends ChangeNotifier {
   final Samples samples = Samples.create();
 
   // Noise streams
+  bool noiseEnabled = true;
   final List<IBitStream> noises = [];
 
   // ------- Stimulus --------------
@@ -33,6 +34,7 @@ class AppState extends ChangeNotifier {
 
   // Original stimulus unexpanded and only serves as a source
   // for expansion.
+  bool stimulusEnabled = true;
   final List<List<int>> _stimulus = [];
   // Expanded stimulus feeds into the streams
   late List<List<int>> expandedStimulus = [];

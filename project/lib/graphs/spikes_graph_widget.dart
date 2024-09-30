@@ -94,8 +94,12 @@ class SpikePainter extends CustomPainter {
   // We use the Maths' functions to map data to unit-space
   // which then allows to map to graph-space.
   void paint(Canvas canvas, Size size) {
-    _drawNoise(canvas, size, strokeWidth, spikeRowOffset);
-    _drawStimulus(canvas, size, strokeWidth, spikeRowOffset);
+    if (appState.noiseEnabled) {
+      _drawNoise(canvas, size, strokeWidth, spikeRowOffset);
+    }
+    if (appState.stimulusEnabled) {
+      _drawStimulus(canvas, size, strokeWidth, spikeRowOffset);
+    }
     // _drawSomaSpikes(canvas, size, strokeWidth, appState);
   }
 

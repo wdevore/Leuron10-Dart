@@ -8,8 +8,7 @@ Simulation works using a two step process via an input and output staging proces
 The simulation is continuous and runs until it is stopped. The graphs scroll from right to left showing activity as it happens.
 
 # Controls
-- Turn on/off noise
-- Turn on/off stimulus
+- Add synapse weight code
 - Manipulate properties of synapse and soma
   - Generate new random weights
   - Min/max/normal

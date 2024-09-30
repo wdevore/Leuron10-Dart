@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../appstate.dart';
+import 'checkbox_widget.dart';
 import 'int_field_widget.dart';
 
 class GlobalTabWidget extends StatefulWidget {
@@ -130,6 +131,30 @@ class _GlobalTabWidgetState extends State<GlobalTabWidget> {
                 // onChangeEnd: (value) => configWidget.config.aplay(),
               ),
             )
+          ],
+        ),
+        Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'Enable Noise: ',
+              ),
+            ),
+            CheckboxWidget(
+              getValue: () => widget.appState.noiseEnabled,
+              setValue: (value) => widget.appState.noiseEnabled = value,
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'Enable Stimulus: ',
+              ),
+            ),
+            CheckboxWidget(
+              getValue: () => widget.appState.stimulusEnabled,
+              setValue: (value) => widget.appState.stimulusEnabled = value,
+            ),
           ],
         ),
       ],
