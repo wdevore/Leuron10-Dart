@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import '../model/app_properties.dart';
 import '../samples/input_sample.dart';
 import '../samples/samples.dart';
 import '../samples/soma_sample.dart';
-import '../samples/synapse_sample.dart';
 import 'border_clip_path.dart';
 
 // This graph renders chains of Spikes: Noise, Stimulus and
@@ -79,13 +77,20 @@ class SpikePainter extends CustomPainter {
   final spikeRowOffset = 8;
 
   late Paint someSpikePaint;
+  late Paint noisePaint;
+  late Paint stimulusPaint;
 
   SpikePainter(this.samples, this.appState) {
     appProperties = appState.properties;
 
-    someSpikePaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 1
+    noisePaint = Paint()
+      ..color = Colors.yellow.shade600
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.square;
+
+    stimulusPaint = Paint()
+      ..color = Colors.green.shade600
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.square;
   }
 
@@ -110,11 +115,6 @@ class SpikePainter extends CustomPainter {
 
   void _drawNoise(
       Canvas canvas, Size size, double strokeWidth, int spikeRowOffset) {
-    final paint = Paint()
-      ..color = Colors.yellow.shade600
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.square;
-
     points.clear();
 
     double wY = 5.0;
@@ -124,7 +124,11 @@ class SpikePainter extends CustomPainter {
     // data because the noise is "mixed in" with the input samples.
 
     List<ListQueue<InputSample>> noiseSamples = appState.samples.noiseSamples;
-    var (rangeStart, rangeEnd) = calcRange();
+    var (rangeStart, rangeEnd) = Maths.calcRange(
+      appProperties.queueDepth,
+      appProperties.rangeWidth,
+      appProperties.rangeStart,
+    );
 
     for (ListQueue<InputSample> queue in noiseSamples) {
       for (var t = rangeStart; t < rangeEnd; t++) {
@@ -143,16 +147,11 @@ class SpikePainter extends CustomPainter {
     }
 
     // Now plot all mapped points.
-    canvas.drawPoints(PointMode.points, points, paint);
+    canvas.drawPoints(PointMode.points, points, noisePaint);
   }
 
   void _drawStimulus(
       Canvas canvas, Size size, double strokeWidth, int spikeRowOffset) {
-    final paint = Paint()
-      ..color = Colors.green.shade600
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.square;
-
     points.clear();
 
     double wY = 85.0;
@@ -163,7 +162,11 @@ class SpikePainter extends CustomPainter {
 
     List<ListQueue<InputSample>> stimulusSamples =
         appState.samples.stimulusSamples;
-    var (rangeStart, rangeEnd) = calcRange();
+    var (rangeStart, rangeEnd) = Maths.calcRange(
+      appProperties.queueDepth,
+      appProperties.rangeWidth,
+      appProperties.rangeStart,
+    );
 
     for (ListQueue<InputSample> queue in stimulusSamples) {
       for (var t = rangeStart; t < rangeEnd; t++) {
@@ -182,7 +185,7 @@ class SpikePainter extends CustomPainter {
     }
 
     // Now plot all mapped points.
-    canvas.drawPoints(PointMode.points, points, paint);
+    canvas.drawPoints(PointMode.points, points, stimulusPaint);
   }
 
   void _drawSomaSpikes(
@@ -214,20 +217,5 @@ class SpikePainter extends CustomPainter {
         canvas.drawLine(Offset(lX, lY), Offset(lX, lY - 10), someSpikePaint);
       }
     }
-  }
-
-  (int, int) calcRange() {
-    final int queueDepth = appProperties.queueDepth;
-    final int rangeWidth = appProperties.rangeWidth;
-    final int rangeStartHalt = queueDepth - rangeWidth;
-
-    int rangeStart = appProperties.rangeStart;
-    rangeStart = min(rangeStartHalt, rangeStart);
-
-    int rangeEnd = rangeStart + rangeWidth;
-    // The end can't exceed queueDepth
-    rangeEnd = min(rangeEnd, queueDepth);
-
-    return (rangeStart, rangeEnd);
   }
 }

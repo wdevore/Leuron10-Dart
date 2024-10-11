@@ -39,42 +39,6 @@ import 'package:d4_random/d4_random.dart';
 import '../model/neuron_properties.dart';
 import 'ibit_stream.dart';
 
-// class CustomPoissonDistribution extends PoissonDistribution {
-//   // Lambda is the number of events within an interval
-//   const CustomPoissonDistribution(super.lambda);
-
-//   // If lamba > 745 then divide lamba by 2
-//   @override
-//   int sample({Random? random}) {
-//     const uniform = UniformDistribution.standard();
-//     var i = 0, b = 1.0;
-
-//     if (lambda <= 750) {
-//       while (b >= exp(-lambda)) {
-//         b *= uniform.sample(random: random);
-//         i++;
-//       }
-//       return i - 1;
-//     }
-
-//     var lambert = lambda / 2;
-//     while (b >= exp(-lambert)) {
-//       b *= uniform.sample(random: random);
-//       i++;
-//     }
-//     i--;
-
-//     var j = 0, c = 1.0;
-//     while (c >= exp(-lambert)) {
-//       c *= uniform.sample(random: random);
-//       j++;
-//     }
-//     j--;
-
-//     return (i + j) ~/ 2;
-//   }
-// }
-
 class CustomPoissonDistribution {
   late num lambda;
   late num Function() randoP;
@@ -95,6 +59,7 @@ class CustomPoissonDistribution {
 
 class PoissonStream implements IBitStream {
   late CustomPoissonDistribution poisson;
+  late int eventSpread;
 
   // The Interspike interval (ISI) is a counter
   // When the counter reaches 0 a spike is placed on the output
@@ -112,9 +77,11 @@ class PoissonStream implements IBitStream {
 
   PoissonStream(this.btype);
 
-  factory PoissonStream.create(int seed, double averagePerInterval) {
+  factory PoissonStream.create(
+      int seed, double averagePerInterval, int eventSpread) {
     PoissonStream ps = PoissonStream(BitStreamType.noise)
       ..seed = seed
+      ..eventSpread = eventSpread
       .. // lambda comes from SimModel.json
           averagePerInterval = averagePerInterval // Lambda
       ..reset();
@@ -164,7 +131,7 @@ class PoissonStream implements IBitStream {
     // } else {
     //   r += offset;
     // }
-    return r;
+    return r * eventSpread;
 
     // isiF := -math.Log(1.0-r) / averagePerInterval
     // fmt.Print(isiF, "  ")

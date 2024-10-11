@@ -30,14 +30,15 @@ class Dendrite {
   /// Returns 'psp'.
   double integrate(double t) {
     double psp = 0.0;
+    double sum = 0.0;
 
     for (Synapse synapse in stimulus) {
-      double sum = synapse.integrate(t);
+      sum = synapse.integrate(t);
       psp += sum;
     }
 
     for (Synapse synapse in noise) {
-      double sum = synapse.integrate(t);
+      sum = synapse.integrate(t);
       psp += sum;
     }
 

@@ -14,7 +14,7 @@
   "rangeWidth": 3500,
   "queueDepth": 4000,
   "sourceStimulus": "stim_2",
-  "stimulusScaler": 10,
+  "stimulusScaler": 100,
   "duration": 10000,
   "softAcceleration": 0.05,
   "softCurve": 2.0,
@@ -27,5 +27,6 @@
   "outputSomaAPSlowFiles": "soma_apSlow_samples_span_",
   "outputSynapsePspFiles": "synapse_psp_samples_span_",
   "timeScale": 100,
+  "stepSize": 0.1,
   "outputStimulusFiles": "stim_samples_span_"
 }

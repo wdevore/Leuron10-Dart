@@ -49,6 +49,7 @@ class LeuronSimulation {
 
   void run() async {
     Duration delayDuration = Duration(microseconds: loopRate);
+    double stepSize = appState.properties.stepSize;
 
     Future.doWhile(() async {
       // Perform a single step of the simulation.
@@ -58,7 +59,7 @@ class LeuronSimulation {
         return false;
       }
 
-      simTime += 0.1;
+      simTime += stepSize;
 
       // oneMillisecondCnt += 0.1;
       // if (oneMillisecondCnt > 0.9) {

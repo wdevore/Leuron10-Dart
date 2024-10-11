@@ -1,13 +1,33 @@
-class Maths {
-  double min = 0.0;
-  double max = 0.0;
+import 'dart:math';
 
+class Maths {
+  double minM = 0.0;
+  double maxM = 0.0;
+
+  /// [t] is between 0 -> 1
   double lerpT(double t) {
-    return min * (1.0 - t) + max * t;
+    return minM * (1.0 - t) + maxM * t;
   }
 
-  // Lerp returns a the value between min and max given t = 0->1
-  // Typically used in conjunction with random generators
+  /// Map [t] to 0->1 range based on min/max
+  double linearT(double t) {
+    if (minM == maxM) return t;
+
+    if (maxM < minM) {
+      double tmp = maxM;
+      maxM = minM;
+      minM = tmp;
+    }
+
+    if (minM < 0.0) {
+      return 1.0 - (t - maxM) / (minM - maxM);
+    }
+
+    return (t - minM) / (maxM - minM);
+  }
+
+  /// Lerp returns a the value between min and max given t = 0->1
+  /// Typically used in conjunction with random generators
   static double lerp(double min, double max, double t) {
     return min * (1.0 - t) + max * t;
   }
@@ -44,5 +64,17 @@ class Maths {
   static (double, double) mapWindowToLocal(
       double x, double y, double offsetX, double offsetY) {
     return (offsetX + x, offsetY + y);
+  }
+
+  static (int, int) calcRange(int queueDepth, int rangeWidth, int rangeStart) {
+    final int rangeStartHalt = queueDepth - rangeWidth;
+
+    rangeStart = min(rangeStartHalt, rangeStart);
+
+    int rangeEnd = rangeStart + rangeWidth;
+    // The end can't exceed queueDepth
+    rangeEnd = min(rangeEnd, queueDepth);
+
+    return (rangeStart, rangeEnd);
   }
 }

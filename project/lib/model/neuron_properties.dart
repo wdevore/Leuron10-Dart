@@ -18,14 +18,15 @@ class NeuronProperties with ChangeNotifier {
   double _poissonPatternMax = 0;
   double _poissonPatternMin = 0;
 
-  // Poisson stream Lambda
   // Firing rate = spikes over an interval of time or
   // Poisson events per interval of time.
   // For example, spikes in a 1 sec span.
+
+  // Poisson stream Lambda
+  // The interval between bursts: IPI
   double _noiseLambda = 0;
   int _noiseCount = 0;
-
-  // final Neuron neuron;
+  int _poissonEventSpread = 0;
 
   NeuronProperties();
 
@@ -87,4 +88,12 @@ class NeuronProperties with ChangeNotifier {
   }
 
   double get poissonPatternMax => _poissonPatternMax;
+
+  // -----------------------------------
+  set poissonEventSpread(int v) {
+    _poissonEventSpread = v;
+    notifyListeners();
+  }
+
+  int get poissonEventSpread => _poissonEventSpread;
 }

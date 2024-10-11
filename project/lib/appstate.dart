@@ -114,7 +114,8 @@ class AppState extends ChangeNotifier {
     NeuronProperties np = neuronProperties;
 
     for (int i = 0; i < np.noiseCount; i++) {
-      IBitStream noise = PoissonStream.create(seed, np.noiseLambda);
+      IBitStream noise =
+          PoissonStream.create(seed, np.noiseLambda, np.poissonEventSpread);
       noises.add(noise);
       seed += seedInc;
     }

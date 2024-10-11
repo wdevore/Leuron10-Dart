@@ -5,6 +5,7 @@ import 'package:split_view/split_view.dart';
 
 import '../appstate.dart';
 import '../graphs/spikes_graph_widget.dart';
+import '../graphs/surgepot_graph_widget.dart';
 import 'global_tab_widget.dart';
 
 class MainHomePage extends StatefulWidget {
@@ -106,8 +107,8 @@ class _MainHomePageState extends State<MainHomePage> {
           color: Colors.lime,
         ),
         controller: SplitViewController(
-          weights: [0.7, 0.3], // Initial weights
-          limits: [null, WeightLimit(min: 0.3, max: 0.7)], // Constraints
+          weights: [0.65, 0.35], // Initial weights
+          limits: [null, WeightLimit(min: 0.35, max: 0.65)], // Constraints
         ),
         children: [
           _buildGraphView(appState),
@@ -126,31 +127,62 @@ Widget _buildGraphView(AppState appState) {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Portal(
-              child: PortalTarget(
-                anchor: const Aligned(
-                  follower: Alignment.topLeft,
-                  target: Alignment.topLeft,
-                  offset: Offset(5, 5),
-                ),
-                visible: true,
-                portalFollower: const Text(
-                  'Spikes',
-                  style: TextStyle(color: Colors.white),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: SpikesGraphWidget(
-                    appState,
-                    samples: appState.samples,
-                    height: 180.0,
-                    bgColor: Colors.black87,
-                  ),
-                ),
-              ),
+              child: _buildSpikesGraph(appState),
+            ),
+            Portal(
+              child: _buildSurgeGraph(appState),
             ),
           ],
         );
       },
+    ),
+  );
+}
+
+Widget _buildSpikesGraph(AppState appState) {
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: const Text(
+      'Spikes',
+      style: TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: SpikesGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+      ),
+    ),
+  );
+}
+
+Widget _buildSurgeGraph(AppState appState) {
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: const Text(
+      'Surge',
+      style: TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: SurgePotGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+      ),
     ),
   );
 }

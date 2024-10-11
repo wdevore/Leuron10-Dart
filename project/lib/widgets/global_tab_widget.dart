@@ -120,15 +120,14 @@ class _GlobalTabWidgetState extends State<GlobalTabWidget> {
               child: Slider(
                 value:
                     widget.appState.neuronProperties.activeSynapse.toDouble(),
-                min: 1,
-                max: widget.appState.neuronProperties.synapses.toDouble(),
+                min: 0,
+                max: widget.appState.neuronProperties.synapses.toDouble() - 1,
                 divisions: 100,
                 onChanged: (value) {
                   widget.appState.neuronProperties.activeSynapse =
                       value.toInt();
                   widget.appState.update();
                 },
-                // onChangeEnd: (value) => configWidget.config.aplay(),
               ),
             )
           ],
@@ -138,7 +137,7 @@ class _GlobalTabWidgetState extends State<GlobalTabWidget> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
               child: Text(
-                'Enable Noise: ',
+                'Toggle Noise: ',
               ),
             ),
             CheckboxWidget(
@@ -148,7 +147,7 @@ class _GlobalTabWidgetState extends State<GlobalTabWidget> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
               child: Text(
-                'Enable Stimulus: ',
+                'Toggle Stimulus: ',
               ),
             ),
             CheckboxWidget(

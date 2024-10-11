@@ -66,7 +66,7 @@ class StimulusStream implements IBitStream {
 
   // Step ...
   // frequency is specified in Hz, for example if Hz = 10 then the pattern
-  // is presented every 1/10 of a second or every 100m If the TimeScale
+  // is presented every 1/10 of a second or every 100m. If the TimeScale
   // is 100us then presentation can be thought of as 10000u
   // The time layout is as follows:
   // |---------- 1 presentation ---------|---------- 2 presentation ---------|...

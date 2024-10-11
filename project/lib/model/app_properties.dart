@@ -15,6 +15,7 @@ class AppProperties with ChangeNotifier {
   double _softAcceleration = 0.0;
   double _softCurve = 2; // 1.0 = linear, 2.0 = parabola
   int patternFrequency = 0;
+  double _stepSize = 0.0;
 
   AppProperties();
 
@@ -85,4 +86,11 @@ class AppProperties with ChangeNotifier {
   }
 
   int get queueDepth => _queueDepth;
+
+  // ---------------------------
+  set stepSize(double v) {
+    _stepSize = v;
+  }
+
+  double get stepSize => _stepSize;
 }

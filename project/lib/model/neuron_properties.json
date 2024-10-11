@@ -6,7 +6,8 @@
     "hertz": 5,
     "poissonPatternMax": 300.0,
     "poissonPatternMin": 50.0,
-    "noiseLambda": 1000.0,
+    "poissonEventSpread": 5.0,
+    "noiseLambda": 500.0,
     "noiseCount": 10,
     "neuron": {
         "threshold": 15.0,
