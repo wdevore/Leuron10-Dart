@@ -51,8 +51,7 @@ class SamplePainter extends CustomPainter {
   final AppState appState;
   final Samples samples;
 
-  final strokeWidth = 2.0;
-  final spikeRowOffset = 8;
+  final strokeWidth = 1.0;
 
   late Paint samplePaint;
   final Path polyLine = Path();
@@ -63,6 +62,7 @@ class SamplePainter extends CustomPainter {
     samplePaint = Paint()
       ..color = Colors.orange.shade300
       ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
   }
 
@@ -71,7 +71,7 @@ class SamplePainter extends CustomPainter {
   // We use the Maths' functions to map data to unit-space
   // which then allows to map to graph-space.
   void paint(Canvas canvas, Size size) {
-    _drawSamples(canvas, size, strokeWidth, spikeRowOffset);
+    _drawSamples(canvas, size, strokeWidth);
   }
 
   @override
@@ -79,17 +79,11 @@ class SamplePainter extends CustomPainter {
     return true;
   }
 
-  void _drawSamples(
-      Canvas canvas, Size size, double strokeWidth, int spikeRowOffset) {
-    // Iterate the noise data and map samples that are within range-start
-    // range-end. The data width should match width of the Input sample
-    // data because the noise is "mixed in" with the input samples.
-
-    Samples samples = appState.samples;
-
+  void _drawSamples(Canvas canvas, Size size, double strokeWidth) {
     // Select the queue indicated by the active synapse
     ListQueue<ValueSample> valueSamples =
-        samples.surgeSamples[appState.neuronProperties.activeSynapse];
+        appState.samples.surgeSamples[appState.neuronProperties.activeSynapse];
+
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
       appProperties.rangeWidth,
@@ -98,11 +92,31 @@ class SamplePainter extends CustomPainter {
 
     polyLine.reset();
 
-    double sample = valueSamples.elementAt(0).v;
     // Map the sample value
-    // uX is the horizontal time axis
+    var (lX, lY) =
+        mapPoint(rangeStart, size, valueSamples, rangeStart, rangeEnd);
+    polyLine.moveTo(lX, lY);
+
+    for (var i = rangeStart + 1; i < rangeEnd; i++) {
+      (lX, lY) = mapPoint(i, size, valueSamples, rangeStart, rangeEnd);
+      polyLine.lineTo(lX, lY);
+    }
+
+    // Now plot line.
+    canvas.drawPath(polyLine, samplePaint);
+  }
+
+  (double, double) mapPoint(
+    int index,
+    Size size,
+    ListQueue<ValueSample> valueSamples,
+    int rangeStart,
+    int rangeEnd,
+  ) {
+    double sample = valueSamples.elementAt(index).v;
+    // The sample value needs to be mapped
     double uX = Maths.mapSampleToUnit(
-      0.0,
+      index.toDouble(),
       rangeStart.toDouble(),
       rangeEnd.toDouble(),
     );
@@ -110,44 +124,16 @@ class SamplePainter extends CustomPainter {
 
     double uY = Maths.mapSampleToUnit(
       sample,
-      rangeStart.toDouble(),
-      rangeEnd.toDouble(),
+      samples.synapseSurgeMin,
+      samples.synapseSurgeMax,
     );
+
     // graph space has +Y downward, but the data is oriented as +Y upward
     // so we flip in unit-space.
     uY = 1.0 - uY;
-    double wY = Maths.mapUnitToWindow(uY, 0.0, size.width);
 
-    var (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
-    polyLine.moveTo(lX, lY);
+    double wY = Maths.mapUnitToWindow(uY, 0.0, size.height);
 
-    for (var t = rangeStart + 1; t < rangeEnd; t++) {
-      sample = valueSamples.elementAt(t).v;
-
-      // The sample value needs to be mapped
-      double uX = Maths.mapSampleToUnit(
-        t.toDouble(),
-        rangeStart.toDouble(),
-        rangeEnd.toDouble(),
-      );
-      double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
-
-      double uY = Maths.mapSampleToUnit(
-        sample,
-        samples.synapseSurgeMin,
-        samples.synapseSurgeMax,
-      );
-
-      // graph space has +Y downward, but the data is oriented as +Y upward
-      // so we flip in unit-space.
-      uY = 1.0 - uY;
-      double wY = Maths.mapUnitToWindow(uY, 0.0, size.width);
-
-      (lX, lY) = Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
-      polyLine.lineTo(lX, lY);
-    }
-
-    // Now plot line.
-    canvas.drawPath(polyLine, samplePaint);
+    return Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
   }
 }

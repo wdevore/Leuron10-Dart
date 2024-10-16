@@ -97,6 +97,9 @@ class Synapse {
   /// The time-mark at which a spike arrived at the soma
   double somaT = 0.0;
 
+  /// The value at time T base on 'w' and psp
+  double valueAtT = 0.0;
+
   /// Track weight min/max
   double wMax = 0.0;
   double wMin = 0.0;
@@ -125,6 +128,7 @@ class Synapse {
     wMax = 5.0;
     wMin = -5.0;
     surgeDep = 0.0;
+    valueAtT = 0.0;
   }
 
   // STDP (LTP/LTD):
@@ -153,9 +157,6 @@ class Synapse {
 
   /// Returns PSP. [t] steps at a rate of 0.1ms.
   double integrate(double t) {
-    // The value at time T base on 'w' and psp
-    double valueAtT = 0.0;
-
     bool updateWeight = false;
 
     double dwLTD = 0.0;
@@ -176,9 +177,6 @@ class Synapse {
     // Synaptic spikes
     // ------------------------------------------------------------------
     if (synInput == 1) {
-      if (id == 2) {
-        print('spike $t');
-      }
       // A spike has arrived on the input of this synapse.
       // Capture time of spike
       synapseT = t;
@@ -205,9 +203,6 @@ class Synapse {
     if (excititory) {
       surgePot = potDecay.update();
       psp = bias + surgePot;
-      if (id == 2) {
-        print('ex psp: $psp');
-      }
 
       // Note: Dep can also occur when a synaptic spike occurs within the
       // STDP window; this window forms when the Soma generates an AP.
@@ -217,10 +212,7 @@ class Synapse {
       }
     } else {
       surgeDep = depDecay.update();
-      psp = bias - surgeDep; // is inhibitory
-      if (id == 2) {
-        print('inhib psp: $psp');
-      }
+      psp = bias + surgeDep; // is inhibitory
     }
 
     // ------------------------------------------------------------------
@@ -252,24 +244,17 @@ class Synapse {
     // Resultant value at 't'
     // ------------------------------------------------------------------
     // PSP is typically near or at Zero.
-    if (excititory) {
-      valueAtT = psp * w;
-    } else {
-      valueAtT = -psp * w; // is inhibitory
-    }
+    valueAtT = psp * w;
 
-    // if (id == 2) {
-    //   print('$surgePot, $surgeDep');
-    // }
     // --------------------------------------------------------
     // Collect this synapse' values at this time step
     // --------------------------------------------------------
-    appState.samples.collectSynapse(this, id, t);
+    appState.samples.collectSynapse(this, t);
 
     // collect Input stimulus
-    appState.samples.collectInput(t, id, stream);
+    appState.samples.collectInput(this, t);
 
-    appState.samples.collectSurge(this, id, t);
+    appState.samples.collectSurge(this, t);
 
     return valueAtT;
   }

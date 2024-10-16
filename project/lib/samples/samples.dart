@@ -1,10 +1,10 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:leuron10_dart/sim_components/synapse.dart';
-import 'package:leuron10_dart/stimulus/ibit_stream.dart';
+import '../sim_components/synapse.dart';
 
 import '../sim_components/soma.dart';
+import '../stimulus/ibit_stream.dart';
 import 'input_sample.dart';
 import 'soma_sample.dart';
 import 'synapse_sample.dart';
@@ -96,7 +96,8 @@ class Samples {
       var listQueue = ListQueue<ValueSample>(queueDepth);
 
       for (var i = 0; i < queueDepth; i++) {
-        listQueue.add(ValueSample());
+        ValueSample vs = ValueSample();
+        listQueue.add(vs);
       }
 
       surgeSamples.add(listQueue);
@@ -115,7 +116,7 @@ class Samples {
 
   // Collects a sample from the running synapse not
   // the persistance model
-  void collectSynapse(Synapse synapse, int id, double t) {
+  void collectSynapse(Synapse synapse, double t) {
     // Check if a channel is already in play. Create a new channel if not.
     // if (synSamples.isEmpty || synSamples[id] == null) {
     //   synSamples[id] = ListQueue(queueDepth);
@@ -135,38 +136,48 @@ class Samples {
       ..input = synapse.stream.output();
 
     // The queue is of fixed size. Remove 'first' then add to 'last'.
-    synSamples[id]
+    synSamples[synapse.id]
       ..removeFirst()
       ..addLast(ss);
   }
 
-  void collectInput(double t, int id, IBitStream stream) {
+  void collectInput(Synapse synapse, double t) {
+    IBitStream stream = synapse.stream;
     InputSample ss = InputSample()
       ..t = t
       ..input = stream.output();
     ListQueue<InputSample> sample;
+    int id = synapse.id;
 
     if (stream.btype == BitStreamType.stimulus) {
-      // The queue is of fixed size. Remove 'first' then add to 'last'.
+      id -= synapse.soma.dendrite.minStimulusId;
       sample = stimulusSamples[id];
     } else {
+      id -= synapse.soma.dendrite.minNoiseId;
       sample = noiseSamples[id];
     }
 
+    // The queue is of fixed size. Remove 'first' then add to 'last'.
     sample
       ..removeFirst()
       ..addLast(ss);
   }
 
-  void collectSurge(Synapse synapse, int id, double t) {
-    synapseSurgeMin = min(synapseSurgeMin, synapse.surgePot);
-    synapseSurgeMax = max(synapseSurgeMax, synapse.surgePot);
+  void collectSurge(Synapse synapse, double t) {
+    int id = synapse.id;
+
+    if (synapse.excititory) {
+      synapseSurgeMin = min(synapseSurgeMin, synapse.surgePot);
+      synapseSurgeMax = max(synapseSurgeMax, synapse.surgePot);
+    } else {
+      synapseSurgeMin = min(synapseSurgeMin, synapse.surgeDep);
+      synapseSurgeMax = max(synapseSurgeMax, synapse.surgeDep);
+    }
+    ListQueue<ValueSample> sample = surgeSamples[id];
 
     ValueSample ss = ValueSample()
       ..t = t
-      ..v = synapse.surgePot;
-
-    ListQueue<ValueSample> sample = surgeSamples[id];
+      ..v = synapse.excititory ? synapse.surgePot : synapse.surgeDep;
 
     sample
       ..removeFirst()

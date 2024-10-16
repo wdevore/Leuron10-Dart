@@ -10,6 +10,11 @@ class Dendrite {
   List<Synapse> noise = [];
   List<Synapse> stimulus = [];
 
+  int minNoiseId = -1;
+  int maxNoiseId = -1;
+  int minStimulusId = -1;
+  int maxStimulusId = -1;
+
   void addStimulus(Synapse syn) {
     stimulus.add(syn);
   }

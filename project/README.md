@@ -34,10 +34,8 @@ DEP and POT must decay from *surge* to 0.0 within their defined window (in milli
 
 
 # Tasks
-- Setup GUI and bind properties
+- fix graphs to show data from negative to positive. 
 - Setup soma psp graph
-- Setup noise
-- Setup stimulus
 
 # Step 1
 On Step a neuron reads the output of each stream, performs integration to generate an output. In a multi-neuron network the ouput would be sent to an Axon's pre-output waiting for the next step.

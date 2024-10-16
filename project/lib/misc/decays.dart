@@ -25,8 +25,9 @@ class Decays {
   }
 
   double update() {
+    var v = value;
     value -= decrement;
     value = max(value, to);
-    return value;
+    return v;
   }
 }

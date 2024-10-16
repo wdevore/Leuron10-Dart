@@ -30,7 +30,8 @@ class Neuron {
   /// any stimulus. It simply create synapes so stimulus can be attached.
   void attachPresets(Map<String, dynamic> map, AppState appState) {
     int cnt = 0; // Use only a sub set of the presets.
-    genSynID = 0;
+
+    soma.dendrite.minStimulusId = genSynID;
 
     for (var synapse in map['synapses']) {
       if (cnt > soma.dendrite.synapseCntLimit - 1) {
@@ -47,12 +48,16 @@ class Neuron {
 
       cnt++;
     }
+
+    soma.dendrite.maxStimulusId = genSynID;
   }
 
   void attachNoise(List<IBitStream> noise, AppState appState) {
     // Create synapses to attach the noise stream to.
     Random rando = Random(36131);
-    genSynID = 0;
+
+    soma.dendrite.minNoiseId = genSynID;
+
     for (var i = 0; i < soma.dendrite.noiseCntLimit; i++) {
       soma.dendrite.addNoise(
         Synapse(appState, soma)
@@ -62,6 +67,8 @@ class Neuron {
       );
       genSynID++;
     }
+
+    soma.dendrite.maxNoiseId = genSynID;
 
     // Now attach noise stimulus
     soma.dendrite.attachNoise(noise);
