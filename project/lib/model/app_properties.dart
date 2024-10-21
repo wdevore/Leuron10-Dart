@@ -16,6 +16,9 @@ class AppProperties with ChangeNotifier {
   double _softCurve = 2; // 1.0 = linear, 2.0 = parabola
   int patternFrequency = 0;
   double _stepSize = 0.0;
+  bool graphSurge = false;
+  bool graphPsp = false;
+  bool graphValueAt = false;
 
   AppProperties();
 
@@ -93,4 +96,18 @@ class AppProperties with ChangeNotifier {
   }
 
   double get stepSize => _stepSize;
+
+  // // ---------------------------
+  // set graphSurge(bool v) {
+  //   _graphSurge = v;
+  // }
+
+  // bool get graphSurge => _graphSurge;
+
+  // // ---------------------------
+  // set graphPsp(bool v) {
+  //   _graphPsp = v;
+  // }
+
+  // bool get graphPsp => _graphPsp;
 }

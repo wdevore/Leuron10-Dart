@@ -8,7 +8,7 @@ import 'package:leuron10_dart/stimulus/ibit_stream.dart';
 
 import '../appstate.dart';
 import 'soma.dart';
-import 'synapse.dart';
+import 'linear_synapse.dart';
 
 class Neuron {
   late Soma soma;
@@ -39,7 +39,7 @@ class Neuron {
       }
 
       soma.dendrite.addStimulus(
-        Synapse(appState, soma)
+        LinearSynapse.create(appState, soma)
           ..excititory = synapse['excititory'] as bool
           ..w = synapse['w'] as double
           ..id = genSynID,
@@ -60,7 +60,7 @@ class Neuron {
 
     for (var i = 0; i < soma.dendrite.noiseCntLimit; i++) {
       soma.dendrite.addNoise(
-        Synapse(appState, soma)
+        LinearSynapse.create(appState, soma)
           ..excititory = rando.nextDouble() > 0.3
           ..w = rando.nextDouble() * 8.0
           ..id = genSynID,

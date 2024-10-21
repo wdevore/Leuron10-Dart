@@ -9,13 +9,13 @@ import '../samples/samples.dart';
 import '../samples/value_sample.dart';
 import 'border_clip_path.dart';
 
-class SurgePotGraphWidget extends StatefulWidget {
+class ValueAtGraphWidget extends StatefulWidget {
   final double height;
   final Color bgColor;
   final AppState appState;
   final Samples samples;
 
-  const SurgePotGraphWidget(
+  const ValueAtGraphWidget(
     this.appState, {
     super.key,
     required this.height,
@@ -24,10 +24,10 @@ class SurgePotGraphWidget extends StatefulWidget {
   });
 
   @override
-  State<SurgePotGraphWidget> createState() => _SurgePotGraphWidgetState();
+  State<ValueAtGraphWidget> createState() => _ValueAtGraphWidgetState();
 }
 
-class _SurgePotGraphWidgetState extends State<SurgePotGraphWidget> {
+class _ValueAtGraphWidgetState extends State<ValueAtGraphWidget> {
   @override
   Widget build(BuildContext context) {
     return ClipPath(
@@ -53,6 +53,7 @@ class SamplePainter extends CustomPainter {
   final strokeWidth = 1.0;
 
   late Paint samplePaint;
+  late Paint zeroLinePaint;
   final Path polyLine = Path();
 
   SamplePainter(this.samples, this.appState) {
@@ -63,6 +64,12 @@ class SamplePainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
+
+    zeroLinePaint = Paint()
+      ..color = Colors.green.shade200
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square;
   }
 
   @override
@@ -70,7 +77,8 @@ class SamplePainter extends CustomPainter {
   // We use the Maths' functions to map data to unit-space
   // which then allows to map to graph-space.
   void paint(Canvas canvas, Size size) {
-    _drawSamples(canvas, size, strokeWidth);
+    _drawZeroLine(canvas, size);
+    _drawSamples(canvas, size);
   }
 
   @override
@@ -78,10 +86,10 @@ class SamplePainter extends CustomPainter {
     return true;
   }
 
-  void _drawSamples(Canvas canvas, Size size, double strokeWidth) {
+  void _drawSamples(Canvas canvas, Size size) {
     // Select the queue indicated by the active synapse
-    ListQueue<ValueSample> valueSamples =
-        appState.samples.surgeSamples[appState.neuronProperties.activeSynapse];
+    ListQueue<ValueSample> valueSamples = appState
+        .samples.valueAtSamples[appState.neuronProperties.activeSynapse];
 
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
@@ -123,16 +131,37 @@ class SamplePainter extends CustomPainter {
 
     double uY = Maths.mapSampleToUnit(
       sample,
-      samples.synapseSurgeMin,
-      samples.synapseSurgeMax,
+      samples.synapseValueMin,
+      samples.synapseValueMax,
     );
 
     // graph space has +Y downward, but the data is oriented as +Y upward
     // so we flip in unit-space.
     uY = 1.0 - uY;
 
-    double wY = Maths.mapUnitToWindow(uY, 0.0, size.height);
+    final double wY = Maths.mapUnitToWindow(uY, 0.0, size.height);
 
     return Maths.mapWindowToLocal(wX, wY, 0.0, 0.0);
+  }
+
+  void _drawZeroLine(Canvas canvas, Size size) {
+    double uY = Maths.mapSampleToUnit(
+      0.0,
+      samples.synapseValueMin,
+      samples.synapseValueMax,
+    );
+
+    // graph space has +Y downward, but the data is oriented as +Y upward
+    // so we flip in unit-space.
+    uY = 1.0 - uY;
+
+    final double wY = Maths.mapUnitToWindow(uY, 0.0, size.height);
+
+    polyLine.reset();
+    // 'x' is from 0 to size.width
+    polyLine.moveTo(0, wY);
+    polyLine.lineTo(size.width, wY);
+
+    canvas.drawPath(polyLine, zeroLinePaint);
   }
 }

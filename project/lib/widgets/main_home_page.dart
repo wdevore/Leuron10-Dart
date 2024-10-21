@@ -4,9 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:split_view/split_view.dart';
 
 import '../appstate.dart';
+import '../graphs/psp_graph_widget.dart';
 import '../graphs/spikes_graph_widget.dart';
 import '../graphs/surgepot_graph_widget.dart';
+import '../graphs/value_at_graph_widget.dart';
 import 'global_tab_widget.dart';
+import 'system_tab_widget.dart';
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({super.key, required this.title});
@@ -130,7 +133,13 @@ Widget _buildGraphView(AppState appState) {
               child: _buildSpikesGraph(appState),
             ),
             Portal(
+              child: _buildValueAtGraph(appState),
+            ),
+            Portal(
               child: _buildSurgeGraph(appState),
+            ),
+            Portal(
+              child: _buildPspGraph(appState),
             ),
           ],
         );
@@ -164,6 +173,8 @@ Widget _buildSpikesGraph(AppState appState) {
 }
 
 Widget _buildSurgeGraph(AppState appState) {
+  if (!appState.properties.graphSurge) return Container();
+
   return PortalTarget(
     anchor: const Aligned(
       follower: Alignment.topLeft,
@@ -178,6 +189,58 @@ Widget _buildSurgeGraph(AppState appState) {
     child: Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: SurgePotGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+      ),
+    ),
+  );
+}
+
+Widget _buildPspGraph(AppState appState) {
+  if (!appState.properties.graphPsp) return Container();
+
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: const Text(
+      'Psp',
+      style: TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: PspGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+      ),
+    ),
+  );
+}
+
+Widget _buildValueAtGraph(AppState appState) {
+  if (!appState.properties.graphValueAt) return Container();
+
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: Text(
+      'ValueAt (${appState.samples.synapseValueMin.toStringAsFixed(2)}, ${appState.samples.synapseValueMax.toStringAsFixed(2)})',
+      style: const TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: ValueAtGraphWidget(
         appState,
         samples: appState.samples,
         height: 180.0,
@@ -223,11 +286,13 @@ Widget _buildTabBar() {
               const Center(
                 child: Text('Sim tab'),
               ),
-              const Center(
-                child: Text('Sys tab'),
+              Consumer<AppState>(
+                builder:
+                    (BuildContext context, AppState appState, Widget? child) {
+                  return SystemTabWidget(appState: appState);
+                },
               ),
               // SimulationPropertiesTabWidget(appState: appState),
-              // SystemTabWidget(appState: appState),
             ],
           ),
         )

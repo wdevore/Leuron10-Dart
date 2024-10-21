@@ -28,5 +28,8 @@
   "outputSynapsePspFiles": "synapse_psp_samples_span_",
   "timeScale": 100,
   "stepSize": 0.1,
-  "outputStimulusFiles": "stim_samples_span_"
+  "outputStimulusFiles": "stim_samples_span_",
+  "graphSurge": false,
+  "graphPsp": false,
+  "graphValueAt": false
 }

@@ -9,13 +9,13 @@ import '../samples/samples.dart';
 import '../samples/value_sample.dart';
 import 'border_clip_path.dart';
 
-class SurgePotGraphWidget extends StatefulWidget {
+class PspGraphWidget extends StatefulWidget {
   final double height;
   final Color bgColor;
   final AppState appState;
   final Samples samples;
 
-  const SurgePotGraphWidget(
+  const PspGraphWidget(
     this.appState, {
     super.key,
     required this.height,
@@ -24,10 +24,10 @@ class SurgePotGraphWidget extends StatefulWidget {
   });
 
   @override
-  State<SurgePotGraphWidget> createState() => _SurgePotGraphWidgetState();
+  State<PspGraphWidget> createState() => _PspGraphWidgetState();
 }
 
-class _SurgePotGraphWidgetState extends State<SurgePotGraphWidget> {
+class _PspGraphWidgetState extends State<PspGraphWidget> {
   @override
   Widget build(BuildContext context) {
     return ClipPath(
@@ -81,7 +81,7 @@ class SamplePainter extends CustomPainter {
   void _drawSamples(Canvas canvas, Size size, double strokeWidth) {
     // Select the queue indicated by the active synapse
     ListQueue<ValueSample> valueSamples =
-        appState.samples.surgeSamples[appState.neuronProperties.activeSynapse];
+        appState.samples.pspSamples[appState.neuronProperties.activeSynapse];
 
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
