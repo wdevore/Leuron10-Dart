@@ -1,18 +1,3 @@
-// A line equation is used to create a linear trace:
-// y = mx+b
-// m = slope = trace rate
-// b = y intercept
-// x = time
-//
-// When a spike arrives PSP jumps a fixed amplitude.
-//
-//        .
-//        |\
-//        | \
-//        |  \
-//---------   ------ 0
-//|----- time ------|
-
 // -- Memory
 // Short-term potentiation (STP) and long-term potentiation (LTP) plasticity
 // are both synaptic states that affect the strength of neuronal connections.
@@ -34,54 +19,62 @@
 // years. LTP is a cellular model of learning and memory that's generally
 // related to the formation of long-term memory.
 
-// We can either start two traceing values or
-// Lerp on a line formed from two points (default):
-// Point 1: (t, surge)
-// Point 2: (N, 0)       where N = 5ms(Dep) or 10ms(Poten)
-// Once we have a trace-line we can interpolate 'dt' on the line.
+// Notes:
+// In order to detect post-pre and post-pre-post we need to track at least two
+// time marks and then rotate/shift them as new spikes arrive. For example,
+// r1 is initialized to -100000000.0
+// The first spike arrives and r1 = spike time.
+// Second spike arrives, r2 = r1 then r1 = new spike time.
+//
+// Reading trace values:
+// When a post spike occurs we read the current trace value from a previous
+// synaptic spike.
 
 import '../appstate.dart';
-import '../misc/linear_trace.dart';
+import '../misc/exponential_trace.dart';
 import 'soma.dart';
 import 'synapse.dart';
 
-class LinearSynapse extends Synapse {
-  // Linear STDP traces
-  LinearTrace potTrace = LinearTrace.createLinear(10.0, 5.0, 0.0);
-  LinearTrace depTrace = LinearTrace.createLinear(5.0, 2.5, 0.0);
-  LinearTrace depAPTrace = LinearTrace.createLinear(5.0, 1.5, 0.0);
-
-  // Maths potent = Maths();
-  // Maths depres = Maths();
-  /// The time-mark at which a spike arrived at a synapse
-  double synapseT = 0.0;
-
-  /// Delta between soma spike time and current time.
-  double dt = 0.0;
-
-  /// The time-mark at which a spike arrived at the soma
-  double somaT = 0.0;
-
-  /// Surge is lerp(dt)
-  double surgeDep = 0.0;
-  double surgePot = 0.0;
+class TripletSynapse extends Synapse {
+  // STDP traces. There are a total of 3 traces: 1 pre and 2 posts
+  ExponentialTrace preTrace = ExponentialTrace.create(4.0);
+  ExponentialTrace postR1Trace = ExponentialTrace.create(5.0); // Tao1 < Tao2
+  ExponentialTrace postR2Trace = ExponentialTrace.create(7.0);
 
   /// This provides a bit of change even if there is not spike
   /// on the synaptic input. This is random between 0.0 -> 1.0
+  ///
+  /// **TODO** file note about *bias* in docs
+  /// Bias shifts the sigmoid function left/right.
+  /// The sigmoid function maps values from double to unit space (0,1) non
+  /// linearly.
   double bias = 0.0;
-  double w = 0.0; // Weight
 
   /// Track weight min/max
   double wMax = 0.0;
   double wMin = 0.0;
 
-  /// trace rate (value per 0.1ms)
-  double m = 0.1;
+  // ---------------------------------------------------------
+  // Detectors of presynaptic and postsynaptic events
+  // Values are between (0,1)
+  // ---------------------------------------------------------
+  // r1 = r2 when a new pre-spike arrives.
+  /// Pre
+  double r1 = 0.0;
 
-  LinearSynapse();
+  /// This time mark is--by definition--older than r1
+  double r2 = 0.0;
 
-  factory LinearSynapse.create(AppState appState, Soma soma) {
-    LinearSynapse ls = LinearSynapse()
+  /// "Fast" Post.
+  double o1 = 0.0;
+
+  /// "Slow" Post. This time mark is--by definition--older than o1
+  double o2 = 0.0;
+
+  TripletSynapse();
+
+  factory TripletSynapse.create(AppState appState, Soma soma) {
+    TripletSynapse ls = TripletSynapse()
       ..appState = appState
       ..soma = soma;
     return ls;
@@ -89,17 +82,10 @@ class LinearSynapse extends Synapse {
 
   @override
   void reset() {
+    super.reset();
     bias = rando.nextDouble();
-    (potTrace as LinearTrace).stepSizeT = appState.properties.stepSize;
-    (depTrace as LinearTrace).stepSizeT = appState.properties.stepSize;
-
-    psp = 0.0;
-    synapseT = 0.0;
-    somaT = 0.0;
     wMax = 5.0;
     wMin = -5.0;
-    surgeDep = 0.0;
-    valueAtT = 0.0;
   }
 
   // STDP (LTP/LTD):
@@ -117,7 +103,7 @@ class LinearSynapse extends Synapse {
   // before it begins to trace, generally over a of 5-10ms, before traceing to
   // zero. The idea is that 'w' should remain at a given value before forgetting.
   //
-  // Integrations goal is to determine a value to return to the soma. This value
+  // Integration's goal is to determine a value to return to the soma. This value
   // can be positive (potentiation)(PO) or negative (depression)(DE).
   //
   // 'w':
@@ -126,77 +112,50 @@ class LinearSynapse extends Synapse {
   // and relative position to a Soma spike are used to control the weight
   // change.
 
-  /// Returns PSP. [t] steps at a rate of 0.1ms.
+  /// Returns (E/I)PSP. [t] steps at a rate of 0.1ms.
   @override
   double integrate(double t) {
     bool updateWeight = false;
 
-    // double dwLTD = 0.0;
-    // double dwLTP = 0.0;
-
-    // This is ISI and will always be positive because 't' is always greater.
-    // As the ISI increases the influence on the weight decreases.
-    // double dt = t - synapseT;
-    double somaDt = t - somaT; // Pre/Post
+    double dwLTD = 0.0;
+    double dt = 0.0;
 
     // There are two spikes we need to consider:
     // 1) Those arriving at a synapse
-    // 2) The soma itself
+    // 2) The soma itself (AP)
 
-    // The output of the stream is the input to this synapse.
-    var synInput = stream.output();
     // ------------------------------------------------------------------
     // Synaptic spikes
     // ------------------------------------------------------------------
+    // The output of the stream is the input to this synapse.
+    var synInput = stream.output();
     if (synInput == 1) {
       // A spike has arrived on the input of this synapse.
-      // Capture time of spike
-      synapseT = t;
-      dt = 0.0;
-      potTrace.reset();
-      depTrace.reset();
+      // Capture and track both time-marks
+      r1 = r2; // Preserve previous time
+      r2 = t; // Pre
 
-      // Bias simulates small fluctuations in the synapse's chemistry.
-      // It introduces a small amount of noise.
-      double r = rando.nextDouble();
-      bias = r < 0.2 ? r : 0.0;
+      // The update of the weight 'w' at the moment of a presynaptic spike is
+      // proportional to the momentary value of the (post) fast trace yi_1.
+      // post - pre;
+      dt = o1 - t;
+      preTrace.update();
 
       updateWeight = true;
     }
 
-    // ------------------------------------------------------------------
-    // PSP
-    // double uPot = potent.linearT(dt);
-    // surgePot = potent.lerpT(uPot);
-    // Map 'dt' from 0->1
-    // double uDep = depres.linearT(dt);
-    // surgeDep = depres.lerpT(uDep);
-    // ------------------------------------------------------------------
-    if (excititory) {
-      surgePot = potTrace.update();
-      psp = bias + surgePot;
-
-      // Note: Dep can also occur when a synaptic spike occurs within the
-      // STDP window; this window forms when the Soma generates an AP.
-      if (soma.output == 1) {
-        surgeDep = depAPTrace.update();
-        psp += bias - surgeDep; // is inhibitory
-      }
-    } else {
-      surgeDep = depTrace.update();
-      psp = bias + surgeDep; // is inhibitory
-    }
+    dwLTD = preTrace.trace(dt);
 
     // ------------------------------------------------------------------
     // Soma APs
     // ------------------------------------------------------------------
     if (soma.output == 1) {
       // The soma has generated an AP.
-      depAPTrace.reset();
+      // depAPTrace.reset();
 
-      // Capture time of spike
-      somaT = t;
-      // somaDt = 0.0;
+      // Capture and track both time-marks
+      o1 = o2; // Preserve previous time
+      o2 = t;
 
       updateWeight = true;
     }
@@ -221,12 +180,36 @@ class LinearSynapse extends Synapse {
     // --------------------------------------------------------
     // Collect this synapse' values at this time step
     // --------------------------------------------------------
-    appState.samples.collectSynapse(this, t);
-    appState.samples.collectInput(this, t); // stimulus
-    appState.samples.collectSurge(this, t);
-    appState.samples.collectPsp(this, t);
-    appState.samples.collectValue(this, t);
+    // appState.samples.collectSynapse(this, t);
+    // appState.samples.collectInput(this, t); // stimulus
+    // appState.samples.collectSurge(this, t);
+    // appState.samples.collectPsp(this, t);
+    // appState.samples.collectValue(this, t);
 
     return valueAtT;
   }
 }
+
+      // Bias simulates small fluctuations in the synapse's chemistry.
+      // It introduces a small amount of noise.
+      // double r = rando.nextDouble();
+      // bias = r < 0.2 ? r : 0.0;
+
+    // ------------------------------------------------------------------
+    // PSP
+    // ------------------------------------------------------------------
+    // if (excititory) {
+    //   // Update traces
+    //   surgePot = potTrace.update(0.0);
+    //   psp = bias + surgePot;
+
+    //   // Note: Dep can also occur when a synaptic spike occurs within the
+    //   // STDP window; this window forms when the Soma generates an AP.
+    //   if (soma.output == 1) {
+    //     surgeDep = depAPTrace.update(0.0);
+    //     psp += bias - surgeDep; // is inhibitory
+    //   }
+    // } else {
+    //   surgeDep = depTrace.update(0.0);
+    //   psp = bias + surgeDep; // is inhibitory
+    // }

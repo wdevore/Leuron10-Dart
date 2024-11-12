@@ -34,8 +34,12 @@ DEP and POT must decay from *surge* to 0.0 within their defined window (in milli
 
 
 # Tasks
-- fix graphs to show data from negative to positive. 
+- add stream for frequency sources. A frequency source emits a spike every 1/f = period. Each has a period field in milliseconds (ms). A freq is supplied and converted to period.
+  - We need two of them where each is out of phase with the other.
+  - So we need a Phase parameter and gui element.
+- Add parameters for triplet model. Add a gui feature such that each parameter can be locked with the other parameters. For example, if you drag A1 and A2, O1, O2 are also checked then they should drag in sync. Any parameter checked is lock/synced with the other check parameters.
 - Setup soma psp graph
+- Mean post synaptic firing rate (1) page 2 section [2].
 
 # Step 1
 On Step a neuron reads the output of each stream, performs integration to generate an output. In a multi-neuron network the ouput would be sent to an Axon's pre-output waiting for the next step.
@@ -120,33 +124,28 @@ Modify the code in *linux/my_application.cc* and add ```*1.5```
 gtk_window_set_default_size(window, 1280*1.5, 720*1.5);
 ```
 
+# Additional concepts
+The following are additional environment effects that still need to be added to the simulation.
+- Homeostatic plasticity
+- Modulators
+- Eventually *memory* needs to be added when full network is built.
 
-# Junk
-Intercept form:
-x/a + y/b = 1
-where:
-a = x intercept (a,0) => x/a = 1 => x = 1*a
-b = y intercept (0,b)
-
-
-Problem:
-Given 
-y = mx+b
-b = y/mx
-if y = 10 and x = 5 then
-
-
-y = (-a/c * x) + b
-Move y intercept but lock x intercept to N
-If c = 1 and a increases then the x intercept moves to the right.
-Looping on x {0 -> N} until y = 0 we obtain x intercept.
-By changing m we can control the time it takes for y to reach 0.
-
-xI = n
-b=6 , c=1, a =  3 
-b=4 , c=1, a = -2
-b=2 , c=1, a = -1
-
-if y = 4 and x = 2 what is the slope (m)
-m = -2/1 = -2
-
+# References
+- [1] a-triplet-spike-timing-dependent-plasticity-model-generalizes-the-bienenstock-cooper-munro-rule.pdf
+  - I also used starter values for "A"s from page 2[4]. They used the minimal model where A2+ = 0
+- [2] Phenomenological models of synaptic plasticity based on spike timing.pdf
+  - page 462 section 2.3: Mean firing rate. Covers an approach by adding each "A" which is equivalent.
+    - in the case of Hebbian *long-term potentiation*, traces left by presynaptic spikes need to be combined with postsynaptic spikes, whereas *short-term plasticity* can be seen as induced by traces of presynaptic spikes, independent of the state of the postsynaptic neuron
+  - Section 4.2: The temporal distance of the spikes in the pair is of the order of a few to tens of milliseconds, whereas the temporal distance between the pairs is of the order of hundreds of milliseconds to seconds.
+  - Section 4.2.1: The new feature of the rule is that LTP is induced by a triplet effect: the weight change is proportional to the value of the presynaptic trace x j evaluated at the moment of a postsynaptic spike and also to the slow postsynaptic trace yi2 remaining from previous postsynaptic spikes. Also talks about efficacy.
+  - Section 4.2.2: suppression via efficacy.
+- [3] Diverse synaptic plasticity mechanisms orchestrated to form and retrieve memories in spiking neural networks.pdf
+  - Talks about *cell assemblies* or neural networks, and memory recall.
+- [4] New_models_of_synaptic_plasticity.pdf
+  - Slides with exponential equations from SpiNNiker.
+- [5] The temporal paradox of Hebbian learning and homeostatic plasticity.pdf
+  - stable models arise from a weight dependence in the learning rule such that high (low) synaptic strength makes LTP (LTD) weaker [53, 70–74]
+- [6a] Stability versus Neuronal Specialization for STDP- LongTail Weight Distributions Solve the Dilemma.PDF
+  - Introduces logSTDP.
+- [6b] Characterization of Generalizability of Spike Timing Dependent Plasticity Trained Spiking Neural Networks.pdf
+  - talks about logSTDP

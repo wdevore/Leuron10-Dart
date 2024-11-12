@@ -1,17 +1,8 @@
-// A line equation is used to create a linear trace:
-// y = mx+b
-// m = slope = trace rate
-// b = y intercept
-// x = time
-//
-// When a spike arrives PSP jumps a fixed amplitude.
-//
-//        .
-//        |\
-//        | \
-//        |  \
-//---------   ------ 0
-//|----- time ------|
+import 'dart:math';
+
+import '../appstate.dart';
+import '../stimulus/ibit_stream.dart';
+import 'soma.dart';
 
 // -- Memory
 // Short-term potentiation (STP) and long-term potentiation (LTP) plasticity
@@ -40,11 +31,16 @@
 // Point 2: (N, 0)       where N = 5ms(Dep) or 10ms(Poten)
 // Once we have a trace-line we can interpolate 'dt' on the line.
 
-import 'dart:math';
-
-import '../appstate.dart';
-import '../stimulus/ibit_stream.dart';
-import 'soma.dart';
+// Efficacy [2] 4.2.2 Suppression:
+// They observed that in triplet protocols of the form pre-post-pre, as long as
+// the intervals between the spikes were reasonably short (< 15 ms), the timing
+// of the pre–post pair was a better predictor for the change in the synaptic
+// strength than either the timing of the post–pre pair or of both timings
+// taken together. Similarly, in post–pre–post protocols, the timing of the
+// first post-pre pairing was the best predictor for the change of synaptic
+// strength. On the basis of this observation, they proposed a model in which
+// the synaptic weight change is not just dependent on the timing of a spike
+// pair, but also on the efficacy of the spikes.
 
 abstract class Synapse {
   Random rando = Random();
@@ -72,19 +68,11 @@ abstract class Synapse {
   /// IPSP (false) or EPSP (true)
   bool excititory = false;
 
+  /// The weight is dynamically adjusted during the simulation.
   double w = 0.0; // Weight
-
-  /// The time-mark at which a spike arrived at a synapse
-  double synapseT = 0.0;
-
-  /// The time-mark at which a spike arrived at the soma
-  double somaT = 0.0;
 
   /// The value at time T base on 'w' and psp
   double valueAtT = 0.0;
-
-  /// Delta between soma spike time and current time.
-  double dt = 0.0;
 
   // The stream (aka Merger) that feeds into this synapse
   late IBitStream stream;
@@ -96,8 +84,6 @@ abstract class Synapse {
 
   void reset() {
     psp = 0.0;
-    synapseT = 0.0;
-    somaT = 0.0;
     valueAtT = 0.0;
   }
 
