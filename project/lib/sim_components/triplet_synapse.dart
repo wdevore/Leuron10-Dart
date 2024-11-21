@@ -38,8 +38,11 @@ import 'synapse.dart';
 class TripletSynapse extends Synapse {
   // STDP traces. There are a total of 3 traces: 1 pre and 2 posts
   ExponentialTrace preTrace = ExponentialTrace.create(4.0);
-  ExponentialTrace postR1Trace = ExponentialTrace.create(5.0); // Tao1 < Tao2
-  ExponentialTrace postR2Trace = ExponentialTrace.create(7.0);
+
+  /// 'Fast' = y1, toa+
+  ExponentialTrace postY1Trace = ExponentialTrace.create(5.0); // Tao1 < Tao2
+  /// 'Slow' = y2, toaY
+  ExponentialTrace postY2Trace = ExponentialTrace.create(7.0);
 
   /// This provides a bit of change even if there is not spike
   /// on the synaptic input. This is random between 0.0 -> 1.0
@@ -48,7 +51,7 @@ class TripletSynapse extends Synapse {
   /// Bias shifts the sigmoid function left/right.
   /// The sigmoid function maps values from double to unit space (0,1) non
   /// linearly.
-  double bias = 0.0;
+  // double bias = 0.0;
 
   /// Track weight min/max
   double wMax = 0.0;
@@ -58,18 +61,18 @@ class TripletSynapse extends Synapse {
   // Detectors of presynaptic and postsynaptic events
   // Values are between (0,1)
   // ---------------------------------------------------------
-  // r1 = r2 when a new pre-spike arrives.
+  // r1T = r2T when a new pre-spike arrives.
   /// Pre
-  double r1 = 0.0;
+  double r1T = 0.0;
 
-  /// This time mark is--by definition--older than r1
-  double r2 = 0.0;
+  /// This time mark is--by definition--older than r1T
+  double r2T = 0.0;
 
   /// "Fast" Post.
-  double o1 = 0.0;
+  double o1T = 0.0;
 
-  /// "Slow" Post. This time mark is--by definition--older than o1
-  double o2 = 0.0;
+  /// "Slow" Post. This time mark is--by definition--older than o1T
+  double o2T = 0.0;
 
   TripletSynapse();
 
@@ -83,41 +86,18 @@ class TripletSynapse extends Synapse {
   @override
   void reset() {
     super.reset();
-    bias = rando.nextDouble();
+    // bias = rando.nextDouble();
     wMax = 5.0;
     wMin = -5.0;
   }
-
-  // STDP (LTP/LTD):
-  // Repeated presynaptic spike arrival a few milliseconds before postsynaptic
-  // action potentials leads in many synapse types to Long-Term Potentiation
-  // (LTP) of the synapses. Thus any spikes that arrive before the Neuron spikes
-  // are seen as contributing to the neuron spike which means they promoted
-  // Potententiation.
-  // Whereas repeated spike arrival after postsynaptic spikes leads to
-  // Long-Term Depression (LTD) of the same synapse. Thus any spikes arriving
-  // after the neuron spike are seen as not contributing to Potentiation.
-  //
-  // We don't want 'w' rapidly accelerating in either direction.
-  // And we also want to maintain 'w's value for extended periods of time
-  // before it begins to trace, generally over a of 5-10ms, before traceing to
-  // zero. The idea is that 'w' should remain at a given value before forgetting.
-  //
-  // Integration's goal is to determine a value to return to the soma. This value
-  // can be positive (potentiation)(PO) or negative (depression)(DE).
-  //
-  // 'w':
-  // 'w's weight is either increased or decreased. To change its value requires
-  // repeated synaptic spikes within a given time window. Both the spike rate
-  // and relative position to a Soma spike are used to control the weight
-  // change.
 
   /// Returns (E/I)PSP. [t] steps at a rate of 0.1ms.
   @override
   double integrate(double t) {
     bool updateWeight = false;
 
-    double dwLTD = 0.0;
+    double dwPairLTD = 0.0;
+    double dwPairLTP = 0.0;
     double dt = 0.0;
 
     // There are two spikes we need to consider:
@@ -128,37 +108,42 @@ class TripletSynapse extends Synapse {
     // Synaptic spikes
     // ------------------------------------------------------------------
     // The output of the stream is the input to this synapse.
-    var synInput = stream.output();
+    int synInput = stream.output();
     if (synInput == 1) {
       // A spike has arrived on the input of this synapse.
       // Capture and track both time-marks
-      r1 = r2; // Preserve previous time
-      r2 = t; // Pre
-
-      // The update of the weight 'w' at the moment of a presynaptic spike is
-      // proportional to the momentary value of the (post) fast trace yi_1.
-      // post - pre;
-      dt = o1 - t;
-      preTrace.update();
+      r1T = r2T; // Preserve previous time
+      r2T = t; // Pre
 
       updateWeight = true;
     }
 
-    dwLTD = preTrace.trace(dt);
+    // Triplet:
+    // The update of the weight 'w' at the moment of a presynaptic spike is
+    // proportional to the momentary value of the (post) fast trace yi_1.
+    // Evaluated at the moment of a presynaptic spike.
+    // post - pre;
+    dt = o1T - t;
+    dwPairLTD = postY1Trace.trace(dt);
 
     // ------------------------------------------------------------------
     // Soma APs
     // ------------------------------------------------------------------
     if (soma.output == 1) {
       // The soma has generated an AP.
-      // depAPTrace.reset();
+      postY1Trace.update();
 
       // Capture and track both time-marks
-      o1 = o2; // Preserve previous time
-      o2 = t;
+      o1T = o2T; // Preserve previous time
+      o2T = t;
 
       updateWeight = true;
     }
+
+    // The update of the weight 'w' at the moment of a postsynaptic spike is
+    // proportional to the momentary value of the trace xj(t)
+    dt = o2T - t;
+    dwPairLTP = preTrace.trace(dt);
 
     // ------------------------------------------------------------------
     // Update weight if LTP/LTD was changed
@@ -190,26 +175,50 @@ class TripletSynapse extends Synapse {
   }
 }
 
-      // Bias simulates small fluctuations in the synapse's chemistry.
-      // It introduces a small amount of noise.
-      // double r = rando.nextDouble();
-      // bias = r < 0.2 ? r : 0.0;
+// Bias simulates small fluctuations in the synapse's chemistry.
+// It introduces a small amount of noise.
+// double r = rando.nextDouble();
+// bias = r < 0.2 ? r : 0.0;
 
-    // ------------------------------------------------------------------
-    // PSP
-    // ------------------------------------------------------------------
-    // if (excititory) {
-    //   // Update traces
-    //   surgePot = potTrace.update(0.0);
-    //   psp = bias + surgePot;
+// ------------------------------------------------------------------
+// PSP
+// ------------------------------------------------------------------
+// if (excititory) {
+//   // Update traces
+//   surgePot = potTrace.update(0.0);
+//   psp = bias + surgePot;
 
-    //   // Note: Dep can also occur when a synaptic spike occurs within the
-    //   // STDP window; this window forms when the Soma generates an AP.
-    //   if (soma.output == 1) {
-    //     surgeDep = depAPTrace.update(0.0);
-    //     psp += bias - surgeDep; // is inhibitory
-    //   }
-    // } else {
-    //   surgeDep = depTrace.update(0.0);
-    //   psp = bias + surgeDep; // is inhibitory
-    // }
+//   // Note: Dep can also occur when a synaptic spike occurs within the
+//   // STDP window; this window forms when the Soma generates an AP.
+//   if (soma.output == 1) {
+//     surgeDep = depAPTrace.update(0.0);
+//     psp += bias - surgeDep; // is inhibitory
+//   }
+// } else {
+//   surgeDep = depTrace.update(0.0);
+//   psp = bias + surgeDep; // is inhibitory
+// }
+
+// STDP (LTP/LTD):
+// Repeated presynaptic spike arrival a few milliseconds before postsynaptic
+// action potentials leads in many synapse types to Long-Term Potentiation
+// (LTP) of the synapses. Thus any spikes that arrive before the Neuron spikes
+// are seen as contributing to the neuron spike which means they promoted
+// Potententiation.
+// Whereas repeated spike arrival after postsynaptic spikes leads to
+// Long-Term Depression (LTD) of the same synapse. Thus any spikes arriving
+// after the neuron spike are seen as not contributing to Potentiation.
+//
+// We don't want 'w' rapidly accelerating in either direction.
+// And we also want to maintain 'w's value for extended periods of time
+// before it begins to trace, generally over a of 5-10ms, before traceing to
+// zero. The idea is that 'w' should remain at a given value before forgetting.
+//
+// Integration's goal is to determine a value to return to the soma. This value
+// can be positive (potentiation)(PO) or negative (depression)(DE).
+//
+// 'w':
+// 'w's weight is either increased or decreased. To change its value requires
+// repeated synaptic spikes within a given time window. Both the spike rate
+// and relative position to a Soma spike are used to control the weight
+// change.
