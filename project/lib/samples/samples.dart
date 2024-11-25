@@ -4,6 +4,7 @@ import 'dart:math';
 import '../sim_components/linear_synapse.dart';
 
 import '../sim_components/soma.dart';
+import '../sim_components/synapse.dart';
 import '../stimulus/ibit_stream.dart';
 import 'input_sample.dart';
 import 'soma_sample.dart';
@@ -40,6 +41,10 @@ class Samples {
   List<ListQueue<ValueSample>> valueAtSamples = []; // Input stimulus
   double synapseValueMin = 0.0;
   double synapseValueMax = 0.0;
+
+  List<ListQueue<ValueSample>> preTraceSamples = []; // Input stimulus
+  double preTraceValueMin = 0.0;
+  double preTraceValueMax = 0.0;
 
   // Track vertical scaling by capturing the Min and Max range
   double somaPspMin = 0.0;
@@ -250,6 +255,28 @@ class Samples {
     ValueSample ss = ValueSample()
       ..t = t
       ..v = synapse.valueAtT;
+
+    sample
+      ..removeFirst()
+      ..addLast(ss);
+  }
+
+  void collect(
+    Synapse synapse,
+    List<ListQueue<ValueSample>> samples,
+    double value,
+    double t,
+  ) {
+    int id = synapse.id;
+
+    synapseValueMin = min(synapseValueMin, value);
+    synapseValueMax = max(synapseValueMax, value);
+
+    ListQueue<ValueSample> sample = samples[id];
+
+    ValueSample ss = ValueSample()
+      ..t = t
+      ..v = value;
 
     sample
       ..removeFirst()

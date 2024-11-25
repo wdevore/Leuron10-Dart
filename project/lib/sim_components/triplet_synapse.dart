@@ -57,6 +57,8 @@ class TripletSynapse extends Synapse {
   double wMax = 0.0;
   double wMin = 0.0;
 
+  double dt = 0.0;
+
   // ---------------------------------------------------------
   // Detectors of presynaptic and postsynaptic events
   // Values are between (0,1)
@@ -65,14 +67,15 @@ class TripletSynapse extends Synapse {
   /// Pre
   double r1T = 0.0;
 
-  /// This time mark is--by definition--older than r1T
-  double r2T = 0.0;
-
   /// "Fast" Post.
   double o1T = 0.0;
 
+  /// "Fast" Post previous
+  double o1TP = 0.0;
+
   /// "Slow" Post. This time mark is--by definition--older than o1T
   double o2T = 0.0;
+  double o2TP = 0.0;
 
   TripletSynapse();
 
@@ -89,6 +92,12 @@ class TripletSynapse extends Synapse {
     // bias = rando.nextDouble();
     wMax = 5.0;
     wMin = -5.0;
+
+    // Set all markers to waaaaay back in the past. This way
+    // all exponentials equate to zero.
+    r1T = double.negativeInfinity;
+    o1TP = double.negativeInfinity;
+    o1T = double.negativeInfinity;
   }
 
   /// Returns (E/I)PSP. [t] steps at a rate of 0.1ms.
@@ -96,9 +105,12 @@ class TripletSynapse extends Synapse {
   double integrate(double t) {
     bool updateWeight = false;
 
+    /// LTD is induced as in the standard STDP pair model, i.e. the weight
+    /// change is proportional to the value of the fast postsynaptic trace yi1
+    /// evaluated at the moment of a presynaptic spike. [2]
     double dwPairLTD = 0.0;
+
     double dwPairLTP = 0.0;
-    double dt = 0.0;
 
     // There are two spikes we need to consider:
     // 1) Those arriving at a synapse
@@ -109,58 +121,79 @@ class TripletSynapse extends Synapse {
     // ------------------------------------------------------------------
     // The output of the stream is the input to this synapse.
     int synInput = stream.output();
+    // Presynaptic spike?
     if (synInput == 1) {
       // A spike has arrived on the input of this synapse.
-      // Capture and track both time-marks
-      r1T = r2T; // Preserve previous time
-      r2T = t; // Pre
+
+      // Update the trace's new internal value based on the previous spike mark
+      // and the current mark.
+      preTrace.update(r1T - t); // This trace is read during an AP
+
+      r1T = t; // New mark
+
+      // Triplet:
+      // The update of the weight 'w' at the moment of a presynaptic spike is
+      // proportional to the momentary value of the (post) fast trace yi_1.
+      // Evaluated at the moment of a presynaptic spike.
+      // post - pre;
+      dwPairLTD = postY1Trace.read(o1TP - t); // Read Post value
 
       updateWeight = true;
     }
-
-    // Triplet:
-    // The update of the weight 'w' at the moment of a presynaptic spike is
-    // proportional to the momentary value of the (post) fast trace yi_1.
-    // Evaluated at the moment of a presynaptic spike.
-    // post - pre;
-    dt = o1T - t;
-    dwPairLTD = postY1Trace.trace(dt);
 
     // ------------------------------------------------------------------
     // Soma APs
     // ------------------------------------------------------------------
+    // Somatic AP?
     if (soma.output == 1) {
       // The soma has generated an AP.
-      postY1Trace.update();
+
+      // ti_f- indicates that the function slow:yi_2 is to be evaluated
+      // *before* it is incremented due to the postsynaptic spike at ti_f
+      double postTrace = postY2Trace.read(o1T - t);
 
       // Capture and track both time-marks
-      o1T = o2T; // Preserve previous time
+      o1TP = o1T; // Preserve previous time mark
+      o1T = t;
+
+      o2TP = o2T; // Preserve previous time mark
       o2T = t;
+
+      postY1Trace.update(o1TP - t);
+
+      // Triplet:
+      // The new feature of the rule is that LTP is induced by a triplet effect:
+      // the weight change is proportional to the value of the presynaptic trace
+      // xj evaluated at the moment of a postsynaptic spike and also to the slow
+      // postsynaptic trace yi2 remaining from previous postsynaptic spikes.
+      // (I.E.): we read the presynaptic trace AND the Slow trace at time marked
+      // by the post AP.
+      //
+      // dt = o2T - t;
+      // The change in weight += dep(w) * pre_expo(f) * slow_expo(f-)
+
+      dwPairLTP = preTrace.read(o1T - t) * postTrace;
+
+      // and Post
+      postY2Trace.update(o2TP - t);
 
       updateWeight = true;
     }
 
-    // The update of the weight 'w' at the moment of a postsynaptic spike is
-    // proportional to the momentary value of the trace xj(t)
-    dt = o2T - t;
-    dwPairLTP = preTrace.trace(dt);
-
     // ------------------------------------------------------------------
     // Update weight if LTP/LTD was changed
-    // The weight eventually traces to baseline but during this simulation
-    // long term traces isn't implemented.
     // ------------------------------------------------------------------
+    double newW = 0.0;
     if (updateWeight) {
-      // double newW = w + dwLTP - dwLTD;
-
-      // Limit new 'w'. We don't want it unbounded.
+      newW = dependency(w + dwPairLTP - dwPairLTD);
     }
 
     // ------------------------------------------------------------------
     // Resultant value at 't'
     // ------------------------------------------------------------------
     // PSP is typically near or at Zero.
-    valueAtT = psp * w;
+    // valueAtT = psp * newW;
+    valueAtT = newW;
 
     // --------------------------------------------------------
     // Collect this synapse' values at this time step
@@ -169,9 +202,17 @@ class TripletSynapse extends Synapse {
     // appState.samples.collectInput(this, t); // stimulus
     // appState.samples.collectSurge(this, t);
     // appState.samples.collectPsp(this, t);
-    // appState.samples.collectValue(this, t);
+    appState.samples
+        .collect(this, appState.samples.preTraceSamples, valueAtT, t);
+    // appState.samples.collect(this, valueAtT, t);
 
     return valueAtT;
+  }
+
+  double dependency(double currentW) {
+    // Limit new 'w'. We don't want it unbounded.
+    // Soft or Hard bounds
+    return currentW; // TODO add dependency functionality
   }
 }
 

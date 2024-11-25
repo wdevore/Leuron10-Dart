@@ -36,14 +36,24 @@ class ExponentialTrace extends Trace {
   }
 
   /// Accumulates
-  void update() {
+  void update(double dt) {
     // This is additive instead of constant.
     // As each spike arrives the scale jumps by 'A' amount.
-    scale = _a + scale; // * exp(0.0 / tao);
+    scale = _a * expo(dt);
   }
 
-  double trace(double dt) {
-    return scale * exp(dt / tao);
+  double expo(double dt) {
+    // TODO clamp dt to >= 0
+    //
+    //     ________/\_________
+    //  -inf        0      +inf
+    return exp(dt.abs() / tao).abs();
+  }
+
+  /// Yields a value between 0.0 and *Scale*
+  /// As [dt] decreases the output moves towards *Scale*
+  double read(double dt) {
+    return scale * expo(dt);
   }
 
   set a(double v) {
