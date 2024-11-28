@@ -80,8 +80,8 @@ class SamplePainter extends CustomPainter {
 
   void _drawSamples(Canvas canvas, Size size, double strokeWidth) {
     // Select the queue indicated by the active synapse
-    ListQueue<ValueSample> valueSamples =
-        appState.samples.surgeSamples[appState.neuronProperties.activeSynapse];
+    ListQueue<ValueSample> valueSamples = appState.samples.samplesData.surge
+        .samples[appState.neuronProperties.activeSynapse];
 
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
@@ -123,8 +123,8 @@ class SamplePainter extends CustomPainter {
 
     double uY = Maths.mapSampleToUnit(
       sample,
-      samples.synapseSurgeMin,
-      samples.synapseSurgeMax,
+      samples.samplesData.surge.minV,
+      samples.samplesData.surge.maxV,
     );
 
     // graph space has +Y downward, but the data is oriented as +Y upward

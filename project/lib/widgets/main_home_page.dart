@@ -235,7 +235,7 @@ Widget _buildValueAtGraph(AppState appState) {
     ),
     visible: true,
     portalFollower: Text(
-      'ValueAt (${appState.samples.synapseValueMin.toStringAsFixed(2)}, ${appState.samples.synapseValueMax.toStringAsFixed(2)})',
+      'ValueAt (${appState.samples.samplesData.valueAt.minV.toStringAsFixed(2)}, ${appState.samples.samplesData.valueAt.maxV.toStringAsFixed(2)})',
       style: const TextStyle(color: Colors.white),
     ),
     child: Padding(

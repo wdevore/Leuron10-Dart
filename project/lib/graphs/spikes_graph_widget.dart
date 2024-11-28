@@ -9,6 +9,7 @@ import '../model/app_properties.dart';
 import '../samples/input_sample.dart';
 import '../samples/samples.dart';
 import '../samples/soma_sample.dart';
+import '../samples/value_sample.dart';
 import 'border_clip_path.dart';
 
 // This graph renders chains of Spikes: Noise, Stimulus and
@@ -123,7 +124,8 @@ class SpikePainter extends CustomPainter {
     // range-end. The data width should match width of the Input sample
     // data because the noise is "mixed in" with the input samples.
 
-    List<ListQueue<InputSample>> noiseSamples = appState.samples.noiseSamples;
+    List<ListQueue<InputSample>> noiseSamples =
+        appState.samples.samplesData.noiseSamples;
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
       appProperties.rangeWidth,
@@ -161,7 +163,7 @@ class SpikePainter extends CustomPainter {
     // data because the noise is "mixed in" with the input samples.
 
     List<ListQueue<InputSample>> stimulusSamples =
-        appState.samples.stimulusSamples;
+        appState.samples.samplesData.stimulusSamples;
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
       appProperties.rangeWidth,
@@ -192,13 +194,14 @@ class SpikePainter extends CustomPainter {
       Canvas canvas, Size size, double strokeWidth, AppState appState) {
     double bottom = size.height;
 
-    List<SomaSample> somaSamples = appState.samples.somaSamples;
+    ListQueue<ValueSample> somaSamples =
+        appState.samples.samplesData.somaAxon.samples[0];
     int rangeEnd = appProperties.rangeStart + appProperties.rangeWidth;
     if (somaSamples.isEmpty) return;
 
     for (var t = appProperties.rangeStart; t < rangeEnd; t++) {
       // A spike = 1
-      if (somaSamples[t].output == 1) {
+      if (somaSamples.elementAt(t).v == 1) {
         // The sample value needs to be mapped
         double uX = Maths.mapSampleToUnit(
           t.toDouble(),

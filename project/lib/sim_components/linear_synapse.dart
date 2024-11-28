@@ -90,8 +90,8 @@ class LinearSynapse extends Synapse {
   @override
   void reset() {
     bias = rando.nextDouble();
-    (potTrace as LinearTrace).stepSizeT = appState.properties.stepSize;
-    (depTrace as LinearTrace).stepSizeT = appState.properties.stepSize;
+    potTrace.stepSizeT = appState.properties.stepSize;
+    depTrace.stepSizeT = appState.properties.stepSize;
 
     psp = 0.0;
     synapseT = 0.0;

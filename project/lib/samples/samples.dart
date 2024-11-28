@@ -1,8 +1,8 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'samples_data.dart';
 import '../sim_components/linear_synapse.dart';
-
 import '../sim_components/soma.dart';
 import '../sim_components/synapse.dart';
 import '../stimulus/ibit_stream.dart';
@@ -22,33 +22,12 @@ class Samples {
   final int synChannelCnt = 20;
   final int noiseChannelCnt = 10;
   final int stimulusChannelCnt = 10;
-  List<ListQueue<SynapseSample>> synSamples = []; // Output
-  List<ListQueue<InputSample>> noiseSamples = []; // Input noise
-  List<ListQueue<InputSample>> stimulusSamples = []; // Input stimulus
 
-  List<SomaSample> somaSamples = [];
-
-  // A queue for each synapse
-  List<ListQueue<ValueSample>> surgeSamples = []; // Input stimulus
-  double synapseSurgeMin = 0.0;
-  double synapseSurgeMax = 0.0;
-
-  // A queue for each synapse
-  List<ListQueue<ValueSample>> pspSamples = []; // Input stimulus
-  double synapsePspMin = 0.0;
-  double synapsePspMax = 0.0;
-
-  List<ListQueue<ValueSample>> valueAtSamples = []; // Input stimulus
-  double synapseValueMin = 0.0;
-  double synapseValueMax = 0.0;
-
-  List<ListQueue<ValueSample>> preTraceSamples = []; // Input stimulus
-  double preTraceValueMin = 0.0;
-  double preTraceValueMax = 0.0;
+  SamplesData samplesData = SamplesData()..init();
 
   // Track vertical scaling by capturing the Min and Max range
-  double somaPspMin = 0.0;
-  double somaPspMax = 0.0;
+  // double somaPspMin = 0.0;
+  // double somaPspMax = 0.0;
 
   double synapseWeightMin = 0.0;
   double synapseWeightMax = 0.0;
@@ -62,106 +41,70 @@ class Samples {
 
   void reset() {
     // ----------------------------------------------------------------
-    somaSamples.clear();
+    // samplesData.somaSamples.clear();
+    samplesData.somaAxon.clear();
+    samplesData.somaAxon.init(1, queueDepth);
 
     // ----------------------------------------------------------------
-    synSamples.clear();
+    samplesData.synSamples.clear();
     for (var i = 0; i < synChannelCnt; i++) {
       var listQueue = ListQueue<SynapseSample>(queueDepth);
       for (var i = 0; i < queueDepth; i++) {
         listQueue.add(SynapseSample());
       }
-      synSamples.add(listQueue);
+      samplesData.synSamples.add(listQueue);
     }
 
     // ----------------------------------------------------------------
-    noiseSamples.clear();
+    samplesData.noiseSamples.clear();
     for (var i = 0; i < noiseChannelCnt; i++) {
       var listQueue = ListQueue<InputSample>(queueDepth);
       for (var i = 0; i < queueDepth; i++) {
         listQueue.add(InputSample());
       }
-      noiseSamples.add(listQueue);
+      samplesData.noiseSamples.add(listQueue);
     }
 
     // ----------------------------------------------------------------
-    stimulusSamples.clear();
+    samplesData.stimulusSamples.clear();
     for (var i = 0; i < stimulusChannelCnt; i++) {
       var listQueue = ListQueue<InputSample>(queueDepth);
       for (var i = 0; i < queueDepth; i++) {
         listQueue.add(InputSample());
       }
-      stimulusSamples.add(listQueue);
+      samplesData.stimulusSamples.add(listQueue);
     }
 
-    somaPspMin = 1000000000000.0;
-    somaPspMax = -1000000000000.0;
+    // somaPspMin = double.infinity;
+    // somaPspMax = double.negativeInfinity;
 
     // ----------------------------------------------------------------
-    synapseSurgeMin = 1000000000000.0;
-    synapseSurgeMax = -1000000000000.0;
-
-    surgeSamples.clear();
-
-    for (var i = 0; i < synChannelCnt; i++) {
-      var listQueue = ListQueue<ValueSample>(queueDepth);
-
-      for (var i = 0; i < queueDepth; i++) {
-        ValueSample vs = ValueSample();
-        listQueue.add(vs);
-      }
-
-      surgeSamples.add(listQueue);
-    }
+    samplesData.surge.reset();
+    samplesData.surge.init(synChannelCnt, queueDepth);
 
     // ----------------------------------------------------------------
-    synapsePspMin = 1000000000000.0;
-    synapsePspMax = -1000000000000.0;
-
-    pspSamples.clear();
-
-    for (var i = 0; i < synChannelCnt; i++) {
-      var listQueue = ListQueue<ValueSample>(queueDepth);
-
-      for (var i = 0; i < queueDepth; i++) {
-        ValueSample vs = ValueSample();
-        listQueue.add(vs);
-      }
-
-      pspSamples.add(listQueue);
-    }
+    samplesData.psp.reset();
+    samplesData.psp.init(synChannelCnt, queueDepth);
 
     // ----------------------------------------------------------------
-    synapseValueMin = 1000000000000.0;
-    synapseValueMax = -1000000000000.0;
+    samplesData.valueAt.reset();
+    samplesData.valueAt.init(synChannelCnt, queueDepth);
 
-    valueAtSamples.clear();
-
-    for (var i = 0; i < synChannelCnt; i++) {
-      var listQueue = ListQueue<ValueSample>(queueDepth);
-
-      for (var i = 0; i < queueDepth; i++) {
-        ValueSample vs = ValueSample();
-        listQueue.add(vs);
-      }
-
-      valueAtSamples.add(listQueue);
-    }
+    samplesData.init();
   }
 
   void collectSoma(Soma soma, double t) {
-    somaPspMin = min(somaPspMin, soma.psp);
-    somaPspMax = max(somaPspMax, soma.psp);
-
-    somaSamples.add(SomaSample()
-      ..t = t
-      ..psp = soma.psp
-      ..output = soma.output);
+    samplesData.somaAxon.addSample(
+      t,
+      0,
+      soma.output.toDouble(),
+    );
   }
 
   // Collects a sample from the running synapse not
   // the persistance model
-  void collectSynapse(LinearSynapse synapse, double t) {
+  // TODO convert to samples_data
+  void collectSynapse(Synapse synapse, double t) {
     // Check if a channel is already in play. Create a new channel if not.
     // if (synSamples.isEmpty || synSamples[id] == null) {
     //   synSamples[id] = ListQueue(queueDepth);
@@ -179,12 +122,12 @@ class Samples {
       ..input = synapse.stream.output();
 
     // The queue is of fixed size. Remove 'first' then add to 'last'.
-    synSamples[synapse.id]
+    samplesData.synSamples[synapse.id]
       ..removeFirst()
       ..addLast(ss);
   }
 
-  void collectInput(LinearSynapse synapse, double t) {
+  void collectInput(Synapse synapse, double t) {
     IBitStream stream = synapse.stream;
     InputSample ss = InputSample()
       ..t = t
@@ -194,10 +137,10 @@ class Samples {
 
     if (stream.btype == BitStreamType.stimulus) {
       id -= synapse.soma.dendrite.minStimulusId;
-      sample = stimulusSamples[id];
+      sample = samplesData.stimulusSamples[id];
     } else {
       id -= synapse.soma.dendrite.minNoiseId;
-      sample = noiseSamples[id];
+      sample = samplesData.noiseSamples[id];
     }
 
     // The queue is of fixed size. Remove 'first' then add to 'last'.
@@ -207,58 +150,35 @@ class Samples {
   }
 
   void collectSurge(LinearSynapse synapse, double t) {
-    int id = synapse.id;
-
-    if (synapse.excititory) {
-      synapseSurgeMin = min(synapseSurgeMin, synapse.surgePot);
-      synapseSurgeMax = max(synapseSurgeMax, synapse.surgePot);
-    } else {
-      synapseSurgeMin = min(synapseSurgeMin, synapse.surgeDep);
-      synapseSurgeMax = max(synapseSurgeMax, synapse.surgeDep);
-    }
-    ListQueue<ValueSample> sample = surgeSamples[id];
-
-    ValueSample ss = ValueSample()
-      ..t = t
-      ..v = synapse.excititory ? synapse.surgePot : synapse.surgeDep;
-
-    sample
-      ..removeFirst()
-      ..addLast(ss);
+    samplesData.surge.addSample(
+      t,
+      synapse.id,
+      synapse.excititory ? synapse.surgePot : synapse.surgeDep,
+    );
   }
 
-  void collectPsp(LinearSynapse synapse, double t) {
-    int id = synapse.id;
-
-    synapsePspMin = min(synapsePspMin, synapse.psp);
-    synapsePspMax = max(synapsePspMax, synapse.psp);
-
-    ListQueue<ValueSample> sample = pspSamples[id];
-
-    ValueSample ss = ValueSample()
-      ..t = t
-      ..v = synapse.psp;
-
-    sample
-      ..removeFirst()
-      ..addLast(ss);
+  void collectPsp(Synapse synapse, double t) {
+    samplesData.psp.addSample(
+      t,
+      synapse.id,
+      synapse.psp,
+    );
   }
 
-  void collectValue(LinearSynapse synapse, double t) {
-    int id = synapse.id;
+  void collectPreTrace(Synapse synapse, double t, double value) {
+    samplesData.preTraceSamples.addSample(
+      t,
+      synapse.id,
+      value,
+    );
+  }
 
-    synapseValueMin = min(synapseValueMin, synapse.valueAtT);
-    synapseValueMax = max(synapseValueMax, synapse.valueAtT);
-
-    ListQueue<ValueSample> sample = valueAtSamples[id];
-
-    ValueSample ss = ValueSample()
-      ..t = t
-      ..v = synapse.valueAtT;
-
-    sample
-      ..removeFirst()
-      ..addLast(ss);
+  void collectValue(Synapse synapse, double t) {
+    samplesData.valueAt.addSample(
+      t,
+      synapse.id,
+      synapse.valueAtT,
+    );
   }
 
   void collect(
@@ -267,19 +187,10 @@ class Samples {
     double value,
     double t,
   ) {
-    int id = synapse.id;
-
-    synapseValueMin = min(synapseValueMin, value);
-    synapseValueMax = max(synapseValueMax, value);
-
-    ListQueue<ValueSample> sample = samples[id];
-
-    ValueSample ss = ValueSample()
-      ..t = t
-      ..v = value;
-
-    sample
-      ..removeFirst()
-      ..addLast(ss);
+    samplesData.valueAt.addSample(
+      t,
+      synapse.id,
+      synapse.valueAtT,
+    );
   }
 }

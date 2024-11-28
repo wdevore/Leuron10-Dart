@@ -169,7 +169,6 @@ class TripletSynapse extends Synapse {
       // (I.E.): we read the presynaptic trace AND the Slow trace at time marked
       // by the post AP.
       //
-      // dt = o2T - t;
       // The change in weight += dep(w) * pre_expo(f) * slow_expo(f-)
 
       dwPairLTP = preTrace.read(o1T - t) * postTrace;
@@ -202,8 +201,9 @@ class TripletSynapse extends Synapse {
     // appState.samples.collectInput(this, t); // stimulus
     // appState.samples.collectSurge(this, t);
     // appState.samples.collectPsp(this, t);
-    appState.samples
-        .collect(this, appState.samples.preTraceSamples, valueAtT, t);
+    appState.samples.collectPreTrace(this, t, preTrace.read(o1T - t));
+    // appState.samples
+    //     .collect(this, appState.samples.preTraceSamples, valueAtT, t);
     // appState.samples.collect(this, valueAtT, t);
 
     return valueAtT;
