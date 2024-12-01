@@ -97,9 +97,10 @@ class AppState extends ChangeNotifier {
     // This configuration doesn't use Noise or Stimulus patterns, but
     // instead uses simple frequency patterns (2 of them).
     stimuli.clear();
+    // 20 = 50ms
     IBitStream freq = FrequencyStream.create(20, 0);
     stimuli.add(freq);
-    freq = FrequencyStream.create(50, 20);
+    freq = FrequencyStream.create(20, 45);
     stimuli.add(freq);
 
     // We still need to load a set of synaptic presets.

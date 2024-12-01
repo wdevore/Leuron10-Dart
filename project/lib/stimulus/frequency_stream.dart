@@ -24,6 +24,7 @@ class FrequencyStream implements IBitStream {
       ..frequency = frequency
       ..period = 1.0 / frequency
       ..phaseShift = phaseShift
+      .._phaseComplete = phaseShift == 0
       ..reset();
 
     ps._periodMilli = (ps.period * 1000).toInt();
@@ -38,7 +39,7 @@ class FrequencyStream implements IBitStream {
 
   @override
   reset() {
-    outputSpike = 0;
+    outputSpike = _phaseComplete ? 1 : 0;
     _phaseCnt = 0;
     _periodCnt = 0;
   }
@@ -48,13 +49,15 @@ class FrequencyStream implements IBitStream {
     outputSpike = 0;
 
     // Cause phase delay
-    if (phaseShift > 0 && !_phaseComplete) {
+    if (!_phaseComplete) {
       if (_phaseCnt >= phaseShift) {
-        // Phase delay, disable it.
+        // Phase shift completed, disable it.
         _phaseComplete = true;
+        outputSpike = 1;
+      } else {
+        _phaseCnt += 1;
       }
-      _phaseCnt += 1;
-    } else if (_phaseComplete) {
+    } else {
       if (_periodCnt >= _periodMilli) {
         // Period has spanned generate a spike.
         _periodCnt = 0; // Reset for next period

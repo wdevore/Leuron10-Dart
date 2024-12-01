@@ -41,6 +41,7 @@ class SampleList {
     maxV = max(maxV, value);
 
     ValueSample ss = ValueSample()
+      ..id = id
       ..t = t
       ..v = value;
 
