@@ -3,6 +3,7 @@
 //
 // When a spike arrives
 
+import '../appstate.dart';
 import 'dendrite.dart';
 
 class Soma {
@@ -20,8 +21,14 @@ class Soma {
   double psp = 0.0;
 
   int _spike = 0;
+  late Dendrite dendrite;
 
-  Dendrite dendrite = Dendrite();
+  Soma();
+
+  factory Soma.create(AppState appState) {
+    Soma s = Soma()..dendrite = Dendrite.create(appState);
+    return s;
+  }
 
   int get output => _spike;
 

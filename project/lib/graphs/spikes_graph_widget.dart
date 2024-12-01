@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 import '../appstate.dart';
 import '../misc/maths.dart';
 import '../model/app_properties.dart';
-import '../samples/input_sample.dart';
 import '../samples/samples.dart';
-import '../samples/soma_sample.dart';
 import '../samples/value_sample.dart';
 import 'border_clip_path.dart';
 
@@ -74,7 +72,7 @@ class SpikePainter extends CustomPainter {
   // Mapped points
   List<Offset> points = [];
 
-  final strokeWidth = 4.0;
+  final strokeWidth = 2.0;
   final spikeRowOffset = 8;
 
   late Paint someSpikePaint;
@@ -124,18 +122,19 @@ class SpikePainter extends CustomPainter {
     // range-end. The data width should match width of the Input sample
     // data because the noise is "mixed in" with the input samples.
 
-    List<ListQueue<InputSample>> noiseSamples =
-        appState.samples.samplesData.noiseSamples;
+    List<ListQueue<ValueSample>> noiseSamples =
+        appState.samples.samplesData.noise.samples;
+
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
       appProperties.rangeWidth,
       appProperties.rangeStart,
     );
 
-    for (ListQueue<InputSample> queue in noiseSamples) {
+    for (ListQueue<ValueSample> queue in noiseSamples) {
       for (var t = rangeStart; t < rangeEnd; t++) {
         // Spiked?
-        if (queue.elementAt(t).input == 1) {
+        if (queue.elementAt(t).v == 1) {
           // The sample value needs to be mapped
           final double uX = Maths.mapSampleToUnit(
               t.toDouble(), rangeStart.toDouble(), rangeEnd.toDouble());
@@ -162,18 +161,19 @@ class SpikePainter extends CustomPainter {
     // range-end. The data width should match width of the Input sample
     // data because the noise is "mixed in" with the input samples.
 
-    List<ListQueue<InputSample>> stimulusSamples =
-        appState.samples.samplesData.stimulusSamples;
+    List<ListQueue<ValueSample>> stimulusSamples =
+        appState.samples.samplesData.stimulus.samples;
+
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
       appProperties.rangeWidth,
       appProperties.rangeStart,
     );
 
-    for (ListQueue<InputSample> queue in stimulusSamples) {
+    for (ListQueue<ValueSample> queue in stimulusSamples) {
       for (var t = rangeStart; t < rangeEnd; t++) {
         // Spiked?
-        if (queue.elementAt(t).input == 1) {
+        if (queue.elementAt(t).v == 1) {
           // The sample value needs to be mapped
           final double uX = Maths.mapSampleToUnit(
               t.toDouble(), rangeStart.toDouble(), rangeEnd.toDouble());

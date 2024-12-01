@@ -5,6 +5,7 @@ import 'value_sample.dart';
 
 class SampleList {
   List<ListQueue<ValueSample>> samples = []; // Input stimulus
+  // Track vertical scaling by capturing the Min and Max range
   double minV = double.infinity;
   double maxV = double.negativeInfinity;
 

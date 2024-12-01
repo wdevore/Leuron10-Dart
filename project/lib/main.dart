@@ -7,8 +7,8 @@ import 'widgets/main_home_page.dart';
 void main() {
   AppState appState = AppState.create()
     ..configure(
-      'lib/model/app_properties.json',
-      'lib/model/neuron_properties.json',
+      'lib/model/app_properties_frequency.json',
+      'lib/model/neuron_properties_frequency.json',
       'synapse_preset_1.json',
     );
 

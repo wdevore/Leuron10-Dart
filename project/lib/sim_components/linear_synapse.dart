@@ -221,7 +221,7 @@ class LinearSynapse extends Synapse {
     // --------------------------------------------------------
     // Collect this synapse' values at this time step
     // --------------------------------------------------------
-    appState.samples.collectSynapse(this, t);
+    appState.samples.collectWeight(this, t);
     appState.samples.collectInput(this, t); // stimulus
     appState.samples.collectSurge(this, t);
     appState.samples.collectPsp(this, t);

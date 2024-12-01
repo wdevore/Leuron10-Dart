@@ -11,6 +11,8 @@ class AppProperties with ChangeNotifier {
 
   String sourceStimulus = '';
   int _stimulusScaler = 0;
+  int _stimulusSynapses = 0;
+
   int _duration = 0;
   double _softAcceleration = 0.0;
   double _softCurve = 2; // 1.0 = linear, 2.0 = parabola
@@ -58,6 +60,14 @@ class AppProperties with ChangeNotifier {
   }
 
   int get stimulusScaler => _stimulusScaler;
+
+  // ---------------------------
+  set stimulusSynapses(int v) {
+    _stimulusSynapses = v;
+    notifyListeners();
+  }
+
+  int get stimulusSynapses => _stimulusSynapses;
 
   // -----------------------------------
   set duration(int v) {

@@ -13,6 +13,8 @@ import '../stimulus/ibit_stream.dart';
 import '../stimulus/poisson_stream.dart';
 import '../stimulus/stimulus_stream.dart';
 import 'sim_components/neuron.dart';
+import 'sim_components/neuron_exponential.dart';
+import 'stimulus/frequency_stream.dart';
 import 'utils/io_utils.dart';
 
 class AppState extends ChangeNotifier {
@@ -23,11 +25,12 @@ class AppState extends ChangeNotifier {
 
   late Neuron neuron;
 
-  final Samples samples = Samples.create();
+  late Samples samples;
 
   // Noise streams
   bool noiseEnabled = true;
   final List<IBitStream> noises = [];
+  // final List<IBitStream> frequencies = [];
 
   // ------- Stimulus --------------
   // expandedStimulus -> IBitStream -> synapse
@@ -36,11 +39,12 @@ class AppState extends ChangeNotifier {
   // for expansion.
   bool stimulusEnabled = true;
   final List<List<int>> _stimulus = [];
-  // Expanded stimulus feeds into the streams
-  late List<List<int>> expandedStimulus = [];
-  // Expanded stimulus feeds into the streams
-  final List<IBitStream> stimuli = [];
+
   int stimulusStreamCnt = 0;
+// Expanded stimulus feeds into the streams
+  late List<List<int>> expandedStimulus = [];
+  // Stimulus feeds into the streams
+  final List<IBitStream> stimuli = [];
 
   late SynapsePresets synapsePresets;
 
@@ -68,10 +72,9 @@ class AppState extends ChangeNotifier {
       properties = AppProperties.fromJson(map);
     }
 
-    // Some properties can be used immediately. This should be
-    // set 'before' Samples is configured.
-    samples.queueDepth = properties.queueDepth;
-    samples.reset();
+    samples = Samples.create(properties.queueDepth)
+      ..stimulusChannelCnt = properties.stimulusSynapses
+      ..init();
 
     filePath = p.join(Directory.current.path, modelFile);
     map = await IoUtils.importData(filePath);
@@ -81,8 +84,34 @@ class AppState extends ChangeNotifier {
 
     dataPath = p.join(Directory.current.path, 'data/');
 
-    neuron = Neuron.create();
+    neuron = ExponentialNeuron.create(this);
 
+    if (properties.sourceStimulus == "frequency") {
+      _configureForFrequency(synapsePresetsFile);
+    } else {
+      _configureNonFrequency(synapsePresetsFile);
+    }
+  }
+
+  void _configureForFrequency(String synapsePresetsFile) {
+    // This configuration doesn't use Noise or Stimulus patterns, but
+    // instead uses simple frequency patterns (2 of them).
+    stimuli.clear();
+    IBitStream freq = FrequencyStream.create(20, 0);
+    stimuli.add(freq);
+    freq = FrequencyStream.create(50, 20);
+    stimuli.add(freq);
+
+    // We still need to load a set of synaptic presets.
+    _loadSynapsePresets(synapsePresetsFile);
+    debugPrint("Synapse presets loaded");
+
+    // At finally attach stimulus
+    neuron.attachStimulus(stimuli);
+    debugPrint("Frequencies attached to neuron");
+  }
+
+  void _configureNonFrequency(String synapsePresetsFile) {
     // -----------------------------------------------------------------
     // First we create the Noise (Poisson) streams. Each stream will
     // be routed to a unique synapse. We need a collection of them so
@@ -102,6 +131,7 @@ class AppState extends ChangeNotifier {
     _loadSynapsePresets(synapsePresetsFile);
     debugPrint("Synapse presets loaded");
 
+    // Attach the proper input(s)
     neuron.attachNoise(noises, this);
     debugPrint("Noise attached to neuron");
 

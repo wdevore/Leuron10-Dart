@@ -1,25 +1,33 @@
-import 'package:leuron10_dart/stimulus/ibit_stream.dart';
+import '../appstate.dart';
+import '../stimulus/ibit_stream.dart';
 
-import 'linear_synapse.dart';
+import 'synapse.dart';
 
 class Dendrite {
   /// Max number of synapses from the presets
-  final double synapseCntLimit = 10;
+  late int synapseCntLimit;
   final double noiseCntLimit = 10;
 
-  List<LinearSynapse> noise = [];
-  List<LinearSynapse> stimulus = [];
+  List<Synapse> noise = [];
+  List<Synapse> stimulus = [];
 
   int minNoiseId = -1;
   int maxNoiseId = -1;
   int minStimulusId = -1;
   int maxStimulusId = -1;
 
-  void addStimulus(LinearSynapse syn) {
+  Dendrite();
+
+  factory Dendrite.create(AppState appState) {
+    Dendrite d = Dendrite();
+    d.synapseCntLimit = appState.properties.stimulusSynapses;
+    return d;
+  }
+  void addStimulus(Synapse syn) {
     stimulus.add(syn);
   }
 
-  void addNoise(LinearSynapse syn) {
+  void addNoise(Synapse syn) {
     noise.add(syn);
   }
 
@@ -37,12 +45,12 @@ class Dendrite {
     double psp = 0.0;
     double sum = 0.0;
 
-    for (LinearSynapse synapse in stimulus) {
+    for (Synapse synapse in stimulus) {
       sum = synapse.integrate(t);
       psp += sum;
     }
 
-    for (LinearSynapse synapse in noise) {
+    for (Synapse synapse in noise) {
       sum = synapse.integrate(t);
       psp += sum;
     }
@@ -53,7 +61,7 @@ class Dendrite {
   /// Stimulus should be added before stimulus.
   void attachNoise(List<IBitStream> noises) {
     int index = 0;
-    for (LinearSynapse n in noise) {
+    for (Synapse n in noise) {
       // if (index > synapseCntLimit - 1) {
       //   break;
       // }

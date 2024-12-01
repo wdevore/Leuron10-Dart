@@ -3,14 +3,15 @@ import '../model/neuron_properties.dart';
 enum BitStreamType {
   noise,
   stimulus,
+  frequency,
 }
 
 abstract class IBitStream {
   late BitStreamType btype;
 
-  configure({int? seed, double? lambda});
-  reset();
+  void configure({int? seed, double? lambda});
+  void reset();
   int output();
-  step();
-  update(NeuronProperties model);
+  void step();
+  void update(NeuronProperties model);
 }
