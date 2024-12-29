@@ -51,6 +51,18 @@ class _SystemTabWidgetState extends State<SystemTabWidget> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
               child: Text(
+                'Toggle preTrace Graph: ',
+              ),
+            ),
+            CheckboxWidget(
+                getValue: () => widget.appState.properties.graphPreTrace,
+                setValue: (value) {
+                  widget.appState.properties.graphPreTrace = value;
+                  widget.appState.update();
+                }),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
                 'Toggle ValueAt Graph: ',
               ),
             ),
@@ -58,6 +70,34 @@ class _SystemTabWidgetState extends State<SystemTabWidget> {
                 getValue: () => widget.appState.properties.graphValueAt,
                 setValue: (value) {
                   widget.appState.properties.graphValueAt = value;
+                  widget.appState.update();
+                }),
+          ],
+        ),
+        Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'Toggle PostY2Trace Graph: ',
+              ),
+            ),
+            CheckboxWidget(
+                getValue: () => widget.appState.properties.graphPostY2Trace,
+                setValue: (value) {
+                  widget.appState.properties.graphPostY2Trace = value;
+                  widget.appState.update();
+                }),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'Toggle Weight Graph: ',
+              ),
+            ),
+            CheckboxWidget(
+                getValue: () => widget.appState.properties.graphweights,
+                setValue: (value) {
+                  widget.appState.properties.graphweights = value;
                   widget.appState.update();
                 }),
           ],

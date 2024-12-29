@@ -34,12 +34,13 @@ DEP and POT must decay from *surge* to 0.0 within their defined window (in milli
 
 
 # Tasks
-- add stream for frequency sources. A frequency source emits a spike every 1/f = period. Each has a period field in milliseconds (ms). A freq is supplied and converted to period.
-  - We need two of them where each is out of phase with the other.
-  - So we need a Phase parameter and gui element.
+- add gui code to adjust phase of selected stimulus source.
 - Add parameters for triplet model. Add a gui feature such that each parameter can be locked with the other parameters. For example, if you drag A1 and A2, O1, O2 are also checked then they should drag in sync. Any parameter checked is lock/synced with the other check parameters.
 - Setup soma psp graph
 - Mean post synaptic firing rate (1) page 2 section [2].
+
+# Bugs
+- {Solved}: why is preTrace capping out? because if dt is the same you eventually keep adding at the same point in the trace.
 
 # Step 1
 On Step a neuron reads the output of each stream, performs integration to generate an output. In a multi-neuron network the ouput would be sent to an Axon's pre-output waiting for the next step.

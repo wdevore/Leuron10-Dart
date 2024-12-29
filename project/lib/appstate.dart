@@ -17,6 +17,11 @@ import 'sim_components/neuron_exponential.dart';
 import 'stimulus/frequency_stream.dart';
 import 'utils/io_utils.dart';
 
+enum WeightBounding {
+  soft,
+  hard,
+}
+
 class AppState extends ChangeNotifier {
   late LeuronSimulation simulation;
 
@@ -91,14 +96,16 @@ class AppState extends ChangeNotifier {
     } else {
       _configureNonFrequency(synapsePresetsFile);
     }
+
+    (neuron as ExponentialNeuron).reset();
   }
 
   void _configureForFrequency(String synapsePresetsFile) {
-    // This configuration doesn't use Noise or Stimulus patterns, but
+    // This configuration doesn't use Noise or Stimulus patterns,
     // instead uses simple frequency patterns (2 of them).
     stimuli.clear();
     // 20 = 50ms
-    IBitStream freq = FrequencyStream.create(20, 0);
+    IBitStream freq = FrequencyStream.create(properties.freqStimulus, 0);
     stimuli.add(freq);
     freq = FrequencyStream.create(20, 45);
     stimuli.add(freq);
@@ -110,6 +117,16 @@ class AppState extends ChangeNotifier {
     // At finally attach stimulus
     neuron.attachStimulus(stimuli);
     debugPrint("Frequencies attached to neuron");
+  }
+
+  void changePhase(int phaseShift) {
+    FrequencyStream freq = stimuli[0] as FrequencyStream;
+    freq.changePhase(phaseShift);
+  }
+
+  void changeFrequency(int frequency) {
+    FrequencyStream freq = stimuli[0] as FrequencyStream;
+    freq.changeFrequency(frequency);
   }
 
   void _configureNonFrequency(String synapsePresetsFile) {

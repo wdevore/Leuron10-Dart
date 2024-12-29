@@ -1,3 +1,4 @@
+import 'sample_list.dart';
 import 'samples_data.dart';
 import '../sim_components/linear_synapse.dart';
 import '../sim_components/soma.dart';
@@ -26,7 +27,12 @@ class Samples {
   }
 
   void init() {
+    List<SampleList> lists = samplesData.lists;
     // ----------------------------------------------------------------
+    // lists[SamplesIndex.somaAxon.index]
+    //   ..reset()
+    //   ..init(1, queueDepth);
+
     samplesData.somaAxon.reset();
     samplesData.somaAxon.init(1, queueDepth);
 
@@ -50,11 +56,19 @@ class Samples {
     samplesData.valueAt.reset();
     samplesData.valueAt.init(synChannelCnt, queueDepth);
 
-    samplesData.weights.reset();
-    samplesData.weights.init(synChannelCnt, queueDepth);
+    lists[SamplesIndex.weights.index]
+      ..reset()
+      ..init(synChannelCnt, queueDepth);
 
-    samplesData.preTraceSamples.reset();
-    samplesData.preTraceSamples.init(synChannelCnt, queueDepth);
+    lists[SamplesIndex.preTrace.index]
+      ..reset()
+      ..init(synChannelCnt, queueDepth);
+    lists[SamplesIndex.postY2Trace.index]
+      ..reset()
+      ..init(synChannelCnt, queueDepth);
+    lists[SamplesIndex.postY1Trace.index]
+      ..reset()
+      ..init(synChannelCnt, queueDepth);
   }
 
   void collectSomaAP(Soma soma, double t) {
@@ -67,11 +81,11 @@ class Samples {
 
   // Collects a sample from the running synapse not
   // the persistance model
-  void collectWeight(Synapse synapse, double t) {
-    samplesData.weights.addSample(
+  void collectWeight(Synapse synapse, double t, double value) {
+    samplesData.lists[SamplesIndex.weights.index].addSample(
       t,
       synapse.id,
-      synapse.w,
+      value,
     );
   }
 
@@ -111,7 +125,23 @@ class Samples {
   }
 
   void collectPreTrace(Synapse synapse, double t, double value) {
-    samplesData.preTraceSamples.addSample(
+    samplesData.lists[SamplesIndex.preTrace.index].addSample(
+      t,
+      synapse.id,
+      value,
+    );
+  }
+
+  void collectPostY2Trace(Synapse synapse, double t, double value) {
+    samplesData.lists[SamplesIndex.postY2Trace.index].addSample(
+      t,
+      synapse.id,
+      value,
+    );
+  }
+
+  void collectPostY1Trace(Synapse synapse, double t, double value) {
+    samplesData.lists[SamplesIndex.postY1Trace.index].addSample(
       t,
       synapse.id,
       value,

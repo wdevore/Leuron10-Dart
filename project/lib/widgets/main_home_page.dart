@@ -5,10 +5,14 @@ import 'package:split_view/split_view.dart';
 
 import '../appstate.dart';
 import '../graphs/psp_graph_widget.dart';
+import '../graphs/samples_graph_widget.dart';
 import '../graphs/spikes_graph_widget.dart';
 import '../graphs/surgepot_graph_widget.dart';
 import '../graphs/value_at_graph_widget.dart';
+import '../samples/sample_list.dart';
+import '../samples/samples_data.dart';
 import 'global_tab_widget.dart';
+import 'simulation_tab_widget.dart';
 import 'system_tab_widget.dart';
 
 class MainHomePage extends StatefulWidget {
@@ -133,14 +137,23 @@ Widget _buildGraphView(AppState appState) {
               child: _buildSpikesGraph(appState),
             ),
             Portal(
-              child: _buildValueAtGraph(appState),
+              child: _buildWeightsGraph(appState),
             ),
             Portal(
-              child: _buildSurgeGraph(appState),
+              child: _buildPreTraceGraph(appState),
             ),
             Portal(
-              child: _buildPspGraph(appState),
+              child: _buildPostY2TraceGraph(appState),
             ),
+            // Portal(
+            //   child: _buildValueAtGraph(appState),
+            // ),
+            // Portal(
+            //   child: _buildSurgeGraph(appState),
+            // ),
+            // Portal(
+            //   child: _buildPspGraph(appState),
+            // ),
           ],
         );
       },
@@ -167,6 +180,93 @@ Widget _buildSpikesGraph(AppState appState) {
         samples: appState.samples,
         height: 180.0,
         bgColor: Colors.black87,
+      ),
+    ),
+  );
+}
+
+Widget _buildPreTraceGraph(AppState appState) {
+  if (!appState.properties.graphPreTrace) return Container();
+  SampleList list =
+      appState.samples.samplesData.lists[SamplesIndex.preTrace.index];
+
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: Text(
+      'PreTrace (${list.minV.toStringAsFixed(2)}, ${list.maxV.toStringAsFixed(2)})',
+      style: const TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: SamplesGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+        index: SamplesIndex.preTrace,
+      ),
+    ),
+  );
+}
+
+Widget _buildPostY2TraceGraph(AppState appState) {
+  if (!appState.properties.graphPostY2Trace) return Container();
+  SampleList list =
+      appState.samples.samplesData.lists[SamplesIndex.postY2Trace.index];
+
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: Text(
+      'PostY2Trace (${list.minV.toStringAsFixed(2)}, ${list.maxV.toStringAsFixed(2)})',
+      style: const TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: SamplesGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+        index: SamplesIndex.postY2Trace,
+      ),
+    ),
+  );
+}
+
+Widget _buildWeightsGraph(AppState appState) {
+  if (!appState.properties.graphweights) return Container();
+  SampleList list =
+      appState.samples.samplesData.lists[SamplesIndex.weights.index];
+
+  return PortalTarget(
+    anchor: const Aligned(
+      follower: Alignment.topLeft,
+      target: Alignment.topLeft,
+      offset: Offset(5, 5),
+    ),
+    visible: true,
+    portalFollower: Text(
+      'Weight (${list.minV.toStringAsFixed(2)}, ${list.maxV.toStringAsFixed(2)})',
+      style: const TextStyle(color: Colors.white),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: SamplesGraphWidget(
+        appState,
+        samples: appState.samples,
+        height: 180.0,
+        bgColor: Colors.black87,
+        index: SamplesIndex.weights,
       ),
     ),
   );
@@ -283,8 +383,11 @@ Widget _buildTabBar() {
                   return GlobalTabWidget(appState: appState);
                 },
               ),
-              const Center(
-                child: Text('Sim tab'),
+              Consumer<AppState>(
+                builder:
+                    (BuildContext context, AppState appState, Widget? child) {
+                  return SimulationTabWidget(appState: appState);
+                },
               ),
               Consumer<AppState>(
                 builder:

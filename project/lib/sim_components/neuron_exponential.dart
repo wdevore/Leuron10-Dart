@@ -27,7 +27,7 @@ class ExponentialNeuron extends Neuron {
   void attachPresets(Map<String, dynamic> map, AppState appState) {
     int cnt = 0; // Use only a sub set of the presets.
 
-    soma.dendrite.minStimulusId = genSynID;
+    // soma.dendrite.minStimulusId = genSynID;
 
     for (var synapse in map['synapses']) {
       if (cnt > soma.dendrite.synapseCntLimit - 1) {
@@ -38,14 +38,24 @@ class ExponentialNeuron extends Neuron {
         TripletSynapse.create(appState, soma)
           ..excititory = synapse['excititory'] as bool
           ..w = synapse['w'] as double
-          ..id = genSynID,
+          ..id = synapse['iD'] as int, // genSynID
       );
-      genSynID++;
+      // genSynID++;
 
       cnt++;
     }
 
-    soma.dendrite.maxStimulusId = genSynID;
+    // soma.dendrite.maxStimulusId = genSynID;
+
+    // Find min/max Ids
+    soma.dendrite.stimulus.sort((a, b) => a.id.compareTo(b.id));
+    int len = soma.dendrite.stimulus.length;
+    soma.dendrite.minStimulusId = soma.dendrite.stimulus[0].id;
+    soma.dendrite.maxStimulusId = soma.dendrite.stimulus[len - 1].id;
+  }
+
+  void reset() {
+    soma.reset();
   }
 
   @override

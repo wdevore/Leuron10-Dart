@@ -104,7 +104,7 @@ class SpikePainter extends CustomPainter {
     if (appState.stimulusEnabled) {
       _drawStimulus(canvas, size, strokeWidth, spikeRowOffset);
     }
-    // _drawSomaSpikes(canvas, size, strokeWidth, appState);
+    _drawSomaSpikes(canvas, size, strokeWidth, appState);
   }
 
   @override

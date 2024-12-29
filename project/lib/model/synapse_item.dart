@@ -4,8 +4,13 @@ part 'synapse_item.g.dart';
 
 @JsonSerializable()
 class SynapseItem {
+  int iD = -1;
+
   bool excititory = false;
   double w = 0;
+  // See reference: #2
+  // epsilonJ = 1 - exp(-(tJ^n - tJ^(n-1)) / toaJ)
+  double efficacyTao = 0.0; // taoI
 
   SynapseItem();
 

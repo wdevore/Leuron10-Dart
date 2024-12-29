@@ -10,6 +10,7 @@ class AppProperties with ChangeNotifier {
   int _queueDepth = 0;
 
   String sourceStimulus = '';
+  int freqStimulus = 0;
   int _stimulusScaler = 0;
   int _stimulusSynapses = 0;
 
@@ -17,10 +18,16 @@ class AppProperties with ChangeNotifier {
   double _softAcceleration = 0.0;
   double _softCurve = 2; // 1.0 = linear, 2.0 = parabola
   int patternFrequency = 0;
+  int phaseShift = 0;
   double _stepSize = 0.0;
+
   bool graphSurge = false;
   bool graphPsp = false;
   bool graphValueAt = false;
+  bool graphPreTrace = false;
+  bool graphPostY2Trace = false;
+  bool graphPostY1Trace = false;
+  bool graphweights = false;
 
   AppProperties();
 

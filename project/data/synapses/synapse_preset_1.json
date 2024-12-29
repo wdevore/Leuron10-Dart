@@ -1,84 +1,124 @@
 {
   "synapses": [
     {
+      "iD": 0,
       "excititory": true,
-      "w": 7.5240727043600995
+      "w": 7.5240727043600995,
+      "efficacyTao": 10
     },
     {
+      "iD": 1,
       "excititory": true,
-      "w": 3.5017134974958415
+      "w": 3.5017134974958415,
+      "efficacyTao": 10
     },
     {
+      "iD": 2,
       "excititory": true,
-      "w": 5.494584582936875
+      "w": 5.494584582936875,
+      "efficacyTao": 10
     },
     {
+      "iD": 3,
       "excititory": false,
-      "w": -1.6869614905344175
+      "w": -1.6869614905344175,
+      "efficacyTao": 10
     },
     {
+      "iD": 4,
       "excititory": false,
-      "w": -1.3981762788294259
+      "w": -1.3981762788294259,
+      "efficacyTao": 10
     },
     {
+      "iD": 5,
       "excititory": true,
-      "w": 6.509119687920775
+      "w": 6.509119687920775,
+      "efficacyTao": 10
     },
     {
+      "iD": 6,
       "excititory": true,
-      "w": 3.045257514397488
+      "w": 3.045257514397488,
+      "efficacyTao": 10
     },
     {
+      "iD": 7,
       "excititory": true,
-      "w": 3.7511187592193855
+      "w": 3.7511187592193855,
+      "efficacyTao": 10
     },
     {
+      "iD": 8,
       "excititory": true,
-      "w": 2.344814858694526
+      "w": 2.344814858694526,
+      "efficacyTao": 10
     },
     {
+      "iD": 9,
       "excititory": true,
-      "w": 1.7484244207421142
+      "w": 1.7484244207421142,
+      "efficacyTao": 10
     },
     {
+      "iD": 10,
       "excititory": true,
-      "w": 2.886971334855248
+      "w": 2.886971334855248,
+      "efficacyTao": 10
     },
     {
+      "iD": 11,
       "excititory": true,
-      "w": 6.899931499583091
+      "w": 6.899931499583091,
+      "efficacyTao": 10
     },
     {
+      "iD": 12,
       "excititory": true,
-      "w": 2.3766605084503323
+      "w": 2.3766605084503323,
+      "efficacyTao": 10
     },
     {
+      "iD": 13,
       "excititory": true,
-      "w": 1.6526612953095887
+      "w": 1.6526612953095887,
+      "efficacyTao": 10
     },
     {
+      "iD": 14,
       "excititory": true,
-      "w": 5.573753325973078
+      "w": 5.573753325973078,
+      "efficacyTao": 10
     },
     {
+      "iD": 15,
       "excititory": true,
-      "w": 0.22642466660711996
+      "w": 0.22642466660711996,
+      "efficacyTao": 10
     },
     {
+      "iD": 16,
       "excititory": false,
-      "w": -0.7854931209089693
+      "w": -0.7854931209089693,
+      "efficacyTao": 10
     },
     {
+      "iD": 17,
       "excititory": true,
-      "w": 0.6356289869909758
+      "w": 0.6356289869909758,
+      "efficacyTao": 10
     },
     {
+      "iD": 18,
       "excititory": true,
-      "w": 0.4729652105110023
+      "w": 0.4729652105110023,
+      "efficacyTao": 10
     },
     {
+      "iD": 19,
       "excititory": true,
-      "w": 2.41218144805248
+      "w": 2.41218144805248,
+      "efficacyTao": 10
     }
   ]
 }

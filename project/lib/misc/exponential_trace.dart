@@ -25,8 +25,10 @@ class ExponentialTrace extends Trace {
 
   ExponentialTrace();
 
-  factory ExponentialTrace.create(double tao) {
-    ExponentialTrace d = ExponentialTrace()..tao = tao;
+  factory ExponentialTrace.create(double tao, double a) {
+    ExponentialTrace d = ExponentialTrace()
+      ..tao = tao
+      ..a = a;
     return d;
   }
 
@@ -39,7 +41,8 @@ class ExponentialTrace extends Trace {
   void update(double dt) {
     // This is additive instead of constant.
     // As each spike arrives the scale jumps by 'A' amount.
-    scale = _a * expo(dt);
+    scale = read(dt) + _a;
+    // print('$scale, ${read(dt)}, ${read(dt) + _a}, $dt');
   }
 
   double expo(double dt) {
@@ -47,7 +50,8 @@ class ExponentialTrace extends Trace {
     //
     //     ________/\_________
     //  -inf        0      +inf
-    return exp(dt.abs() / tao).abs();
+    // return exp(dt.abs() / tao).abs();
+    return exp(-dt / tao).abs();
   }
 
   /// Yields a value between 0.0 and *Scale*

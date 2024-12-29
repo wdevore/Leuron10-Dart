@@ -14,6 +14,9 @@ class Soma {
   // After a spike the soma enters into a Refactory Period. For our simulation
   // that period is around 1ms or 10 steps.
   // Refactory period
+  double refractoryCnt = 0.0;
+  double refractoryPeriod = 3;
+  bool refractoryState = false;
 
   // Post synaptic potential
   // This value has a decay rate measured in milliseconds
@@ -30,13 +33,43 @@ class Soma {
     return s;
   }
 
+  void reset() {
+    dendrite.reset();
+
+    refractoryState = false;
+    refractoryCnt = 0;
+  }
+
   int get output => _spike;
 
   set spike(int v) => _spike = v;
 
   /// Returns a spike
   int integrate(double t) {
-    double psp = dendrite.integrate(t);
+    psp = dendrite.integrate(t);
+
+    // Soma only spikes and then drops immediately
+    _spike = 0;
+
+    if (refractoryState) {
+      // this algorithm should be the same as for the synapse or at least very
+      // close.
+      if (refractoryCnt >= refractoryPeriod) {
+        refractoryState = false;
+        refractoryCnt = 0;
+        // print('Refractory ended at ($t)\n');
+      } else {
+        refractoryCnt++;
+      }
+    } else {
+      // The dendrite will return a value that affects the soma.
+      if (psp > threshold) {
+        refractoryState = true;
+
+        // We set immediately because we are simulating a single neuron.
+        _spike = 1;
+      }
+    }
 
     return 0;
   }

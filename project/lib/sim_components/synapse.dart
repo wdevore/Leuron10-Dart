@@ -70,6 +70,9 @@ abstract class Synapse {
 
   /// The weight is dynamically adjusted during the simulation.
   double w = 0.0; // Weight
+  WeightBounding bounding = WeightBounding.hard;
+  double wMax = 0;
+  double wMin = 0;
 
   /// The value at time T base on 'w' and psp
   double valueAtT = 0.0;

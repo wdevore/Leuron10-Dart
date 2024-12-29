@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../model/neuron_properties.dart';
 import 'ibit_stream.dart';
 
@@ -42,6 +44,26 @@ class FrequencyStream implements IBitStream {
     outputSpike = _phaseComplete ? 1 : 0;
     _phaseCnt = 0;
     _periodCnt = 0;
+  }
+
+  void changePhase(int phaseShift) {
+    phaseShift = phaseShift;
+    _phaseComplete = phaseShift == 0;
+    reset();
+  }
+
+  void changeFrequency(int frequency) {
+    frequency = frequency;
+    if (frequency > 0) {
+      period = 1.0 / frequency;
+      _periodMilli = (period * 1000).toInt();
+    }
+  }
+
+  void setPhase(int shift) {
+    phaseShift = shift;
+    _phaseComplete = shift == 0;
+    reset();
   }
 
   @override

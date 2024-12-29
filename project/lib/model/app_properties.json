@@ -14,6 +14,7 @@
   "rangeWidth": 3500,
   "queueDepth": 4000,
   "sourceStimulus": "stim_2",
+  "freqStimulus": 20,
   "stimulusScaler": 100,
   "stimulusSynapses": 10,
   "duration": 10000,
@@ -32,5 +33,6 @@
   "outputStimulusFiles": "stim_samples_span_",
   "graphSurge": false,
   "graphPsp": false,
-  "graphValueAt": false
+  "graphValueAt": false,
+  "graphPreTrace": true
 }
