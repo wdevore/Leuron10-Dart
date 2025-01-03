@@ -75,7 +75,7 @@ class SpikePainter extends CustomPainter {
   final strokeWidth = 2.0;
   final spikeRowOffset = 8;
 
-  late Paint someSpikePaint;
+  late Paint somaSpikePaint;
   late Paint noisePaint;
   late Paint stimulusPaint;
 
@@ -89,6 +89,11 @@ class SpikePainter extends CustomPainter {
 
     stimulusPaint = Paint()
       ..color = Colors.green.shade600
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.square;
+
+    somaSpikePaint = Paint()
+      ..color = Colors.white
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.square;
   }
@@ -217,7 +222,7 @@ class SpikePainter extends CustomPainter {
         // uY = 1.0 - uY;
         // double wY = Maths.mapUnitToWindow(uY, 0.0, bottom);
 
-        canvas.drawLine(Offset(lX, lY), Offset(lX, lY - 10), someSpikePaint);
+        canvas.drawLine(Offset(lX, lY), Offset(lX, lY - 10), somaSpikePaint);
       }
     }
   }

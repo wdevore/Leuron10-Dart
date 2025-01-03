@@ -7,6 +7,8 @@ import '../appstate.dart';
 import 'dendrite.dart';
 
 class Soma {
+  late AppState appState;
+
   // The threshold indicates when a spike occurs. When the soma's charge
   // potential reachs the threshold a spike is generated.
   double threshold = 0.0;
@@ -29,7 +31,11 @@ class Soma {
   Soma();
 
   factory Soma.create(AppState appState) {
-    Soma s = Soma()..dendrite = Dendrite.create(appState);
+    Soma s = Soma()
+      ..dendrite = Dendrite.create(appState)
+      ..appState = appState
+      ..refractoryPeriod = appState.neuronProperties.refractoryPeriod
+      ..threshold = appState.neuronProperties.threshold;
     return s;
   }
 
@@ -71,6 +77,8 @@ class Soma {
       }
     }
 
-    return 0;
+    appState.samples.collectSomaAP(this, t);
+
+    return _spike;
   }
 }

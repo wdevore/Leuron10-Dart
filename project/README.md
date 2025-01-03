@@ -150,3 +150,8 @@ The following are additional environment effects that still need to be added to 
   - Introduces logSTDP.
 - [6b] Characterization of Generalizability of Spike Timing Dependent Plasticity Trained Spiking Neural Networks.pdf
   - talks about logSTDP
+- [7] Scholarpedia: http://www.scholarpedia.org/article/Spike-timing_dependent_plasticity
+  - Hard bounds mean that an update rule with fixed parameters η+ and η− is used until the bounds are reached.
+  - Soft bounds mean that, for large weights, synaptic depression dominates over potentiation.
+-[8] NestML. https://nestml.readthedocs.io/en/latest/tutorials/triplet_stdp_synapse/triplet_stdp_synapse.html
+  - It shows an implementation using 4 variables

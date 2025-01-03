@@ -28,6 +28,9 @@ class NeuronProperties with ChangeNotifier {
   int _noiseCount = 0;
   int _poissonEventSpread = 0;
 
+  double threshold = 0.0;
+  double refractoryPeriod = 0.0;
+
   NeuronProperties();
 
   factory NeuronProperties.create() {

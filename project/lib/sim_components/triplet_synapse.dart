@@ -189,12 +189,12 @@ class TripletSynapse extends Synapse {
     if (updateWeight) {
       w = dwPairLTP - dwPairLTD;
 
-      // TODO Bounding: Soft or hard
       switch (bounding) {
         case WeightBounding.hard:
           w = max(min(w, wMax), wMin);
           break;
         case WeightBounding.soft:
+          // TODO Bounding: Soft
           break;
       }
     }
@@ -203,16 +203,10 @@ class TripletSynapse extends Synapse {
     // Collect this synapse' values at this time step
     // --------------------------------------------------------
     appState.samples.collectInput(this, t); // stimulus
-    appState.samples.collectSomaAP(soma, soma.output.toDouble());
     appState.samples.collectPreTrace(this, t, preTrace.read(t - r1T));
     appState.samples.collectPostY2Trace(this, t, postY2Trace.read(t - o1T));
     appState.samples.collectPostY1Trace(this, t, postY1Trace.read(t - o1TP));
     appState.samples.collectWeight(this, t, w);
-
-    // appState.samples.collectSynapse(this, t);
-    // appState.samples.collectSurge(this, t);
-    // appState.samples.collectPsp(this, t);
-    // appState.samples.collect(this, valueAtT, t);
 
     return w;
   }
@@ -223,7 +217,9 @@ class TripletSynapse extends Synapse {
     return currentW; // TODO add dependency functionality
   }
 
+  // Efficacy is based on both the spike proximity and distance from soma
   double efficacy(double dt) {
+    // TODO add distance feature.
     return 1.0 - exp(-dt / efficacyTao);
   }
 }
