@@ -63,10 +63,10 @@ class TripletSynapse extends Synapse {
   // Values are between (0,1)
   // ---------------------------------------------------------
   // r1T = r2T when a new pre-spike arrives.
-  /// Pre: time marked at the moment a synaptic spike arrive
+  /// Pre: x_j time marked at the moment a synaptic spike arrive
   double r1T = 0.0;
 
-  /// "Fast" Post.
+  /// "Fast" Post. yi_1
   double o1T = 0.0;
 
   /// "Fast" Post previous
@@ -101,23 +101,8 @@ class TripletSynapse extends Synapse {
   /// Returns (E/I)PSP. [t] steps at a rate of 0.1ms.
   @override
   double integrate(double t) {
+    // We only update the weight if a spike or AP event occurs.
     bool updateWeight = false;
-
-    /// LTD is induced as in the standard STDP pair model, i.e. the weight
-    /// change is proportional to the value of the fast postsynaptic trace yi1
-    /// evaluated at the moment of a presynaptic spike. [2]
-    double dwPairLTD = 0.0;
-
-    // Triplet:
-    // The new feature of the rule is that LTP is induced by a triplet effect:
-    // the weight change is proportional to the value of the presynaptic trace
-    // xj evaluated at the moment of a postsynaptic spike and also to the slow
-    // postsynaptic trace yi2 remaining from previous postsynaptic spikes.
-    // (I.E.): we read the presynaptic trace AND the Slow trace at time marked
-    // by the post AP.
-    //
-    // LTP = dep(w) * pre_expo(f) * slow_expo(f-)
-    double dwPairLTP = 0.0;
 
     // There are two spikes we need to consider:
     // 1) Those arriving at a synapse
@@ -128,48 +113,61 @@ class TripletSynapse extends Synapse {
     // ------------------------------------------------------------------
     // The output of the stream is the input to this synapse.
     int synInput = stream.output();
+
     // Presynaptic spike?
     if (synInput == 1) {
       // A spike has arrived on the input of this synapse.
 
       // Update the trace's new internal value based on the previous spike mark
       // and the current mark.
+      // We need t-r1T to determine where on the current trace the spike
+      // occurred. With that value we can add the surge value (i.e is 1.0) on:
+      // new_surge = current_value + 1.0
       preTrace.update(t - r1T); // This trace is read during an AP or sampling
 
-      // Triplet:
-      // The update of the weight 'w' at the moment of a presynaptic spike is
-      // proportional to the momentary value of the (post) fast trace yi_1.
-      // Evaluated at the moment of a presynaptic spike.
-      dwPairLTD =
-          dependency(w) * postY1Trace.read(t - o1TP); // Read fast Post value
+      r1T = t; // New mark
 
       updateWeight = true;
-
-      r1T = t; // New mark
     }
+
+    // Partial Pair:
+    // The update of the weight 'w' at the moment of a presynaptic spike is
+    // proportional to the momentary value of the (post) fast trace yi_1.
+    // Evaluated at the moment of a presynaptic spike.
+    /// LTD is induced as in the standard STDP pair model, i.e. the weight
+    /// change is proportional to the value of the fast postsynaptic trace yi1
+    /// evaluated at the moment of a presynaptic spike. [2]
+    /// LTD is induced at very low frequencies, from (0.1Hz < 20Hz)
+    // NOTE: this read belongs in the soma spike if statement above, but it is
+    //       here for continuous sampling.
+    double postY1TraceRead = postY1Trace.read(t - o1T);
+    double dwPairLTD = dependency(w) * postY1TraceRead; // Read fast-Post value
+    appState.samples.collectPostY1Trace(this, t, postY1TraceRead);
 
     // ------------------------------------------------------------------
     // Soma APs
     // ------------------------------------------------------------------
     // Somatic AP?
-    if (soma.output == 1) {
-      // The soma has generated an AP.
+    // ti_f- indicates that the function slow:yi_2 is to be evaluated
+    // *before* it is incremented due to the postsynaptic spike at ti_f
+    double dtPost = t - o1TP;
+    // NOTE: this read belongs in the soma spike if statement below, but it is
+    //       here for continuous sampling.
+    double postY2TraceRead = postY2Trace.read(dtPost); // Read slow-post prior
+    appState.samples.collectPostY2Trace(this, t, postY2TraceRead);
 
-      // ti_f- indicates that the function slow:yi_2 is to be evaluated
-      // *before* it is incremented due to the postsynaptic spike at ti_f
-      double postTrace =
-          postY2Trace.read(t - o1T); // Read post slow prior value
+    if (soma.output == 1) {
+      // The soma has generated an AP. Note: the soma's threshold varies in
+      // relation to the soma AP Rate. TODO Higher rates mean what? It is
+      // supposed to influence the threshold. Higher rates may mean we raise the
+      // threshold to just under the average max???
 
       // This is read during a presynaptic spikes and we perform update after
       // reading above.
-      postY1Trace.update(t - o1TP);
-
-      dwPairLTP = dependency(w) * preTrace.read(t - o1T) * postTrace;
+      postY1Trace.update(dtPost);
 
       // and previous Post
-      postY2Trace.update(t - o1TP);
-
-      updateWeight = true;
+      postY2Trace.update(dtPost);
 
       // Capture and track both time-marks
       //            pre
@@ -179,15 +177,35 @@ class TripletSynapse extends Synapse {
       //      o1TP            o1T
       o1TP = o1T; // track previous post.
       o1T = t;
+
+      updateWeight = true;
     }
+
+    // Triplet:
+    // Note: we could move this calculation inside the 'if' statement below
+    // , however, for visual perpuposes we need each time step value.
+    // The new feature of the rule is that LTP is induced by a triplet effect:
+    // the weight change is proportional to the value of the presynaptic trace
+    // xj evaluated at the moment of a postsynaptic spike and also to the slow
+    // postsynaptic trace yi2 remaining from previous postsynaptic spikes.
+    // (I.E.): we read the presynaptic trace AND the Slow trace at time marked
+    // by the post AP.
+    //
+    double preTraceRead = preTrace.read(t - o1T);
+    appState.samples.collectPreTrace(this, t, preTraceRead);
+
+    // LTP = dep(w) * pre_expo(f) * slow_expo(f-)
+    //     =               dep(w)    *     xj(f)    *   yi_2(f-)
+    double dwPairLTP = dependency(w) * preTraceRead * postY2TraceRead;
 
     // ------------------------------------------------------------------
     // Update weight if LTP/LTD was changed
     // Resultant value at 't'
     // ------------------------------------------------------------------
-    // double newW = 0.0;
     if (updateWeight) {
-      w = dwPairLTP - dwPairLTD;
+      var nw = dwPairLTP - dwPairLTD;
+
+      w += excititory ? nw : -nw;
 
       switch (bounding) {
         case WeightBounding.hard:
@@ -203,9 +221,6 @@ class TripletSynapse extends Synapse {
     // Collect this synapse' values at this time step
     // --------------------------------------------------------
     appState.samples.collectInput(this, t); // stimulus
-    appState.samples.collectPreTrace(this, t, preTrace.read(t - r1T));
-    appState.samples.collectPostY2Trace(this, t, postY2Trace.read(t - o1T));
-    appState.samples.collectPostY1Trace(this, t, postY1Trace.read(t - o1TP));
     appState.samples.collectWeight(this, t, w);
 
     return w;
