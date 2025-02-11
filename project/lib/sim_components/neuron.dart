@@ -15,6 +15,7 @@ abstract class Neuron {
 
   /// Returns a spike
   int integrate(double t);
+  void reset();
 
   /// Create and copy map presets into a synapse. This does not attach
   /// any stimulus. It simply create synapes so stimulus can be attached.

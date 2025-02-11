@@ -32,7 +32,10 @@
   "stepSize": 1.0,
   "outputStimulusFiles": "stim_samples_span_",
   "graphSurge": false,
-  "graphPsp": false,
+  "graphPsp": true,
   "graphValueAt": false,
-  "graphPreTrace": true
+  "graphPreTrace": true,
+  "graphPostY2Trace": false,
+  "graphPostY1Trace": false,
+  "graphweights": false
 }

@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,7 @@ class SamplesGraphWidget extends StatefulWidget {
   final AppState appState;
   final Samples samples;
   final SamplesIndex index;
-
+  final double lineValue; // For example, a threshold
   const SamplesGraphWidget(
     this.appState, {
     super.key,
@@ -25,6 +26,7 @@ class SamplesGraphWidget extends StatefulWidget {
     required this.bgColor,
     required this.samples,
     required this.index,
+    required this.lineValue,
   });
 
   @override
@@ -41,7 +43,12 @@ class _SamplesGraphWidgetState extends State<SamplesGraphWidget> {
         height: widget.height,
         color: widget.bgColor,
         child: CustomPaint(
-          painter: SamplePainter(widget.samples, widget.appState, widget.index),
+          painter: SamplePainter(
+            widget.samples,
+            widget.appState,
+            widget.index,
+            widget.lineValue,
+          ),
         ),
       ),
     );
@@ -53,17 +60,25 @@ class SamplePainter extends CustomPainter {
   final AppState appState;
   final Samples samples;
   final SamplesIndex index;
+  final double lineValue; // For example, a threshold
 
   final strokeWidth = 1.0;
 
   late Paint samplePaint;
+  late Paint linePaint;
   final Path polyLine = Path();
 
-  SamplePainter(this.samples, this.appState, this.index) {
+  SamplePainter(this.samples, this.appState, this.index, this.lineValue) {
     appProperties = appState.properties;
 
     samplePaint = Paint()
       ..color = Colors.orange.shade300
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square;
+
+    linePaint = Paint()
+      ..color = Colors.blue.shade600
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -97,15 +112,31 @@ class SamplePainter extends CustomPainter {
       appProperties.rangeStart,
     );
 
+    // Draw line value
+    polyLine.reset();
+    var (lvX, lvY) = mapPoint(0, size, lineValue, dataL, rangeStart, rangeEnd);
+    polyLine.moveTo(lvX, lvY);
+    // if (lineValue > 0.0) {
+    //   print(lvY);
+    // }
+    (lvX, lvY) =
+        mapPoint(rangeEnd, size, lineValue, dataL, rangeStart, rangeEnd);
+    polyLine.lineTo(lvX, lvY);
+    if (!lvY.isNaN) {
+      canvas.drawPath(polyLine, linePaint);
+    }
+
+    // Draw graph
     polyLine.reset();
 
     // Map the sample value
-    var (lX, lY) =
-        mapPoint(rangeStart, size, valueSamples, dataL, rangeStart, rangeEnd);
+    double vs = valueSamples.elementAt(rangeStart).v;
+    var (lX, lY) = mapPoint(rangeStart, size, vs, dataL, rangeStart, rangeEnd);
     polyLine.moveTo(lX, lY);
 
     for (var i = rangeStart + 1; i < rangeEnd; i++) {
-      (lX, lY) = mapPoint(i, size, valueSamples, dataL, rangeStart, rangeEnd);
+      double vs = valueSamples.elementAt(i).v;
+      (lX, lY) = mapPoint(i, size, vs, dataL, rangeStart, rangeEnd);
       polyLine.lineTo(lX, lY);
     }
 
@@ -116,12 +147,11 @@ class SamplePainter extends CustomPainter {
   (double, double) mapPoint(
     int index,
     Size size,
-    ListQueue<ValueSample> valueSamples,
+    double valueSample,
     SampleList dataL,
     int rangeStart,
     int rangeEnd,
   ) {
-    double sample = valueSamples.elementAt(index).v;
     // The sample value needs to be mapped
     double uX = Maths.mapSampleToUnit(
       index.toDouble(),
@@ -130,7 +160,10 @@ class SamplePainter extends CustomPainter {
     );
     double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
 
-    double uY = Maths.mapSampleToUnit(sample, dataL.minV, dataL.maxV);
+    double minV = min(dataL.minV, valueSample);
+    double maxV = max(dataL.maxV, valueSample);
+
+    double uY = Maths.mapSampleToUnit(valueSample, minV, maxV);
 
     // graph space has +Y downward, but the data is oriented as +Y upward
     // so we flip in unit-space.

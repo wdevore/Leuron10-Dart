@@ -83,4 +83,9 @@ class LinearNeuron extends Neuron {
 
   @override
   void step() {}
+
+  @override
+  void reset() {
+    // TODO: implement reset
+  }
 }

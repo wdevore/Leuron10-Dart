@@ -23,7 +23,7 @@
   "timeScale": 100,
   "stepSize": 1.0,
   "graphSurge": false,
-  "graphPsp": false,
+  "graphPsp": true,
   "graphValueAt": false,
   "graphPreTrace": true,
   "graphPostY2Trace": true,

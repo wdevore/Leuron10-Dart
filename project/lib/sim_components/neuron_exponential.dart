@@ -38,6 +38,7 @@ class ExponentialNeuron extends Neuron {
         TripletSynapse.create(appState, soma)
           ..excititory = synapse['excititory'] as bool
           ..w = synapse['w'] as double
+          ..initialW = synapse['w'] as double
           ..id = synapse['iD'] as int, // genSynID
       );
       // genSynID++;
@@ -55,6 +56,7 @@ class ExponentialNeuron extends Neuron {
   }
 
   void reset() {
+    // TODO reset stimulus streams
     soma.reset();
   }
 

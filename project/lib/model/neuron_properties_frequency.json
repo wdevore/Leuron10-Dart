@@ -9,6 +9,6 @@
     "poissonEventSpread": 5.0,
     "noiseLambda": 500.0,
     "noiseCount": 10,
-    "threshold": 15.0,
+    "threshold": 10.0,
     "refractoryPeriod": 3.0
 }

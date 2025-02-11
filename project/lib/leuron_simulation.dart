@@ -28,8 +28,7 @@ class LeuronSimulation {
   factory LeuronSimulation.create(AppState appState) {
     LeuronSimulation ls = LeuronSimulation()
       ..appState = appState
-      ..configure()
-      ..reset();
+      ..configure();
     return ls;
   }
 
@@ -37,6 +36,7 @@ class LeuronSimulation {
 
   void reset() {
     simTime = 0.0;
+    appState.neuron?.reset();
     // millisecondsTotal = 0;
     // oneMillisecondCnt = 0.0;
   }
@@ -80,7 +80,7 @@ class LeuronSimulation {
         stimulus.step();
       }
 
-      appState.neuron.step();
+      appState.neuron!.step();
 
       await Future.delayed(delayDuration);
 
@@ -91,7 +91,7 @@ class LeuronSimulation {
   /// Returns 'true' when duration exceeded
   bool simulate() {
     // Perform 1 integration step
-    appState.neuron.integrate(simTime);
+    appState.neuron!.integrate(simTime);
 
     // I originally intended a fixed duration. Instead the simulation
     // runs continously and all the graphs scroll.

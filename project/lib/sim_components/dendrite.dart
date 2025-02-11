@@ -32,10 +32,10 @@ class Dendrite {
   }
 
   void reset() {
-    for (var s in stimulus) {
+    for (Synapse s in stimulus) {
       s.reset();
     }
-    for (var n in noise) {
+    for (Synapse n in noise) {
       n.reset();
     }
   }

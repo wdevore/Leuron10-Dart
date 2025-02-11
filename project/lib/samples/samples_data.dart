@@ -27,8 +27,6 @@ class SamplesData {
   // A queue for each synapse
   SampleList surge = SampleList();
 
-  SampleList psp = SampleList();
-
   SampleList valueAt = SampleList();
 
   List<SampleList> lists = [];

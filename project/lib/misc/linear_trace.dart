@@ -23,13 +23,14 @@ class LinearTrace extends Trace {
   void reset() {
     steps = duration / stepSizeT;
     decrement = from / steps;
-    value = from;
+    // value = from;
   }
 
   double update() {
-    var v = value;
-    value -= decrement;
-    value = max(value, to);
-    return v;
+    // var v = value;
+    // value -= decrement;
+    // value = max(value, to);
+    // return v;
+    return 0.0;
   }
 }

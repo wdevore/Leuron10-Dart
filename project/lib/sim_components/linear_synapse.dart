@@ -224,7 +224,7 @@ class LinearSynapse extends Synapse {
     appState.samples.collectWeight(this, t, w);
     appState.samples.collectInput(this, t); // stimulus
     appState.samples.collectSurge(this, t);
-    appState.samples.collectPsp(this, t);
+    // appState.samples.collectSomaPsp(this, t);
     appState.samples.collectValue(this, t);
 
     return valueAtT;

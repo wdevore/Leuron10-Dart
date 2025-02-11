@@ -69,6 +69,7 @@ class Soma {
       }
     } else {
       // The dendrite will return a value that affects the soma.
+      // print('$t : $psp');
       if (psp > threshold) {
         refractoryState = true;
 
@@ -78,6 +79,7 @@ class Soma {
     }
 
     appState.samples.collectSomaAP(this, t);
+    appState.samples.collectSomaPsp(this, t);
 
     return _spike;
   }

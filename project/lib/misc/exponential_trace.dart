@@ -22,6 +22,7 @@ class ExponentialTrace extends Trace {
   double tao = 0.0;
   double _a = 0.0; // A+ or A- (aka surge)
   double scale = 0.0;
+  double tp = double.negativeInfinity;
 
   ExponentialTrace();
 
@@ -33,31 +34,40 @@ class ExponentialTrace extends Trace {
   }
 
   @override
-  void reset({double stepSizeT = 0.0}) {
+  void reset() {
     scale = _a;
+    tp = double.negativeInfinity;
   }
 
-  /// Accumulates
-  void update(double dt) {
+  /// Updates the trace itself
+  void update(double t) {
     // This is additive instead of constant.
     // As each spike arrives the scale jumps by 'A' amount.
-    scale = read(dt) + _a;
+    //        current    +  surge
+    scale = read(t - tp) + _a;
     // print('$scale, ${read(dt)}, ${read(dt) + _a}, $dt');
+    tp = t; // Capture as previous time mark.
   }
 
-  double expo(double dt) {
+  // Mostly used for sampling
+  double readDt(double t) {
+    return read(t - tp);
+  }
+
+  /// [read] provides a read the value relative to a different delta.
+  /// Yields a value between 0.0 and *Scale*
+  /// As [to] decreases the output moves towards *Scale*
+  double read(double dt) {
+    return scale * _expo(dt);
+  }
+
+  double _expo(double dt) {
     // TODO clamp dt to >= 0
     //
     //     ________/\_________
     //  -inf        0      +inf
     // return exp(dt.abs() / tao).abs();
     return exp(-dt / tao).abs();
-  }
-
-  /// Yields a value between 0.0 and *Scale*
-  /// As [dt] decreases the output moves towards *Scale*
-  double read(double dt) {
-    return scale * expo(dt);
   }
 
   set a(double v) {

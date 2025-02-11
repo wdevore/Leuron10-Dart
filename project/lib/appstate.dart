@@ -28,7 +28,7 @@ class AppState extends ChangeNotifier {
   int seed = 5000;
   int seedInc = 5432;
 
-  late Neuron neuron;
+  Neuron? neuron;
 
   late Samples samples;
 
@@ -115,7 +115,7 @@ class AppState extends ChangeNotifier {
     debugPrint("Synapse presets loaded");
 
     // At finally attach stimulus
-    neuron.attachStimulus(stimuli);
+    neuron!.attachStimulus(stimuli);
     debugPrint("Frequencies attached to neuron");
   }
 
@@ -150,10 +150,10 @@ class AppState extends ChangeNotifier {
     debugPrint("Synapse presets loaded");
 
     // Attach the proper input(s)
-    neuron.attachNoise(noises, this);
+    neuron!.attachNoise(noises, this);
     debugPrint("Noise attached to neuron");
 
-    neuron.attachStimulus(stimuli);
+    neuron!.attachStimulus(stimuli);
     debugPrint("Stimulus attached to neuron");
   }
 
@@ -249,7 +249,7 @@ class AppState extends ChangeNotifier {
         Map<String, dynamic> map = jsonDecode(json);
         synapsePresets = SynapsePresets.fromJson(map);
         // Load presets into simulation model, but doesn't attach stimulus.
-        neuron.attachPresets(map, this);
+        neuron!.attachPresets(map, this);
       }
     } catch (e) {
       debugPrint(e.toString());

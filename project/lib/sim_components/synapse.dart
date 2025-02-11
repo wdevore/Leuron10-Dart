@@ -71,11 +71,13 @@ abstract class Synapse {
   /// The weight is dynamically adjusted during the simulation.
   double w = 0.0; // Weight
   WeightBounding bounding = WeightBounding.hard;
-  double wMax = 0;
-  double wMin = 0;
+  double wMax = 0.0;
+  double wMin = 0.0;
 
   /// The value at time T base on 'w' and psp
   double valueAtT = 0.0;
+
+  double initialW = 0.0;
 
   // The stream (aka Merger) that feeds into this synapse
   late IBitStream stream;
@@ -88,6 +90,7 @@ abstract class Synapse {
   void reset() {
     psp = 0.0;
     valueAtT = 0.0;
+    w = initialW;
   }
 
   // STDP (LTP/LTD):

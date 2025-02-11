@@ -49,10 +49,6 @@ class Samples {
     samplesData.surge.init(synChannelCnt, queueDepth);
 
     // ----------------------------------------------------------------
-    samplesData.psp.reset();
-    samplesData.psp.init(synChannelCnt, queueDepth);
-
-    // ----------------------------------------------------------------
     samplesData.valueAt.reset();
     samplesData.valueAt.init(synChannelCnt, queueDepth);
 
@@ -69,6 +65,10 @@ class Samples {
     lists[SamplesIndex.postY1Trace.index]
       ..reset()
       ..init(synChannelCnt, queueDepth);
+
+    lists[SamplesIndex.psp.index]
+      ..reset()
+      ..init(1, queueDepth);
   }
 
   void collectSomaAP(Soma soma, double t) {
@@ -116,12 +116,17 @@ class Samples {
     );
   }
 
-  void collectPsp(Synapse synapse, double t) {
-    samplesData.psp.addSample(
+  void collectSomaPsp(Soma soma, double t) {
+    samplesData.lists[SamplesIndex.psp.index].addSample(
       t,
-      synapse.id,
-      synapse.psp,
+      0,
+      soma.psp,
     );
+    // samplesData.psp.addSample(
+    //   t,
+    //   0,
+    //   soma.psp,
+    // );
   }
 
   void collectPreTrace(Synapse synapse, double t, double value) {

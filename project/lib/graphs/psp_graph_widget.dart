@@ -5,15 +5,19 @@ import 'package:flutter/material.dart';
 import '../appstate.dart';
 import '../misc/maths.dart';
 import '../model/app_properties.dart';
+import '../samples/sample_list.dart';
 import '../samples/samples.dart';
+import '../samples/samples_data.dart';
 import '../samples/value_sample.dart';
 import 'border_clip_path.dart';
 
+@Deprecated('Replaced with SamplesGraphWidget')
 class PspGraphWidget extends StatefulWidget {
   final double height;
   final Color bgColor;
   final AppState appState;
   final Samples samples;
+  final SamplesIndex index;
 
   const PspGraphWidget(
     this.appState, {
@@ -21,6 +25,7 @@ class PspGraphWidget extends StatefulWidget {
     required this.height,
     required this.bgColor,
     required this.samples,
+    required this.index,
   });
 
   @override
@@ -37,7 +42,7 @@ class _PspGraphWidgetState extends State<PspGraphWidget> {
         height: widget.height,
         color: widget.bgColor,
         child: CustomPaint(
-          painter: SamplePainter(widget.samples, widget.appState),
+          painter: SamplePainter(widget.samples, widget.appState, widget.index),
         ),
       ),
     );
@@ -49,13 +54,14 @@ class SamplePainter extends CustomPainter {
   // final Environment environment;
   final AppState appState;
   final Samples samples;
+  final SamplesIndex index;
 
   final strokeWidth = 1.0;
 
   late Paint samplePaint;
   final Path polyLine = Path();
 
-  SamplePainter(this.samples, this.appState) {
+  SamplePainter(this.samples, this.appState, this.index) {
     appProperties = appState.properties;
 
     samplePaint = Paint()
@@ -70,7 +76,7 @@ class SamplePainter extends CustomPainter {
   // We use the Maths' functions to map data to unit-space
   // which then allows to map to graph-space.
   void paint(Canvas canvas, Size size) {
-    _drawSamples(canvas, size, strokeWidth);
+    _drawSamples(canvas, size, strokeWidth, index);
   }
 
   @override
@@ -78,10 +84,16 @@ class SamplePainter extends CustomPainter {
     return true;
   }
 
-  void _drawSamples(Canvas canvas, Size size, double strokeWidth) {
+  void _drawSamples(
+      Canvas canvas, Size size, double strokeWidth, SamplesIndex samplesIndex) {
     // Select the queue indicated by the active synapse
-    ListQueue<ValueSample> valueSamples = appState.samples.samplesData.psp
-        .samples[appState.neuronProperties.activeSynapse];
+    // Select the queue indicated by the active synapse
+    SamplesData data = samples.samplesData;
+    SampleList dataL = data.lists[samplesIndex.index];
+
+    // if (dataL.samples.isEmpty) return;
+
+    ListQueue<ValueSample> valueSamples = dataL.samples[samplesIndex.index];
 
     var (rangeStart, rangeEnd) = Maths.calcRange(
       appProperties.queueDepth,
@@ -93,11 +105,11 @@ class SamplePainter extends CustomPainter {
 
     // Map the sample value
     var (lX, lY) =
-        mapPoint(rangeStart, size, valueSamples, rangeStart, rangeEnd);
+        mapPoint(rangeStart, size, valueSamples, dataL, rangeStart, rangeEnd);
     polyLine.moveTo(lX, lY);
 
     for (var i = rangeStart + 1; i < rangeEnd; i++) {
-      (lX, lY) = mapPoint(i, size, valueSamples, rangeStart, rangeEnd);
+      (lX, lY) = mapPoint(i, size, valueSamples, dataL, rangeStart, rangeEnd);
       polyLine.lineTo(lX, lY);
     }
 
@@ -109,6 +121,7 @@ class SamplePainter extends CustomPainter {
     int index,
     Size size,
     ListQueue<ValueSample> valueSamples,
+    SampleList dataL,
     int rangeStart,
     int rangeEnd,
   ) {
@@ -121,11 +134,7 @@ class SamplePainter extends CustomPainter {
     );
     double wX = Maths.mapUnitToWindow(uX, 0.0, size.width);
 
-    double uY = Maths.mapSampleToUnit(
-      sample,
-      samples.samplesData.psp.minV,
-      samples.samplesData.psp.maxV,
-    );
+    double uY = Maths.mapSampleToUnit(sample, dataL.minV, dataL.maxV);
 
     // graph space has +Y downward, but the data is oriented as +Y upward
     // so we flip in unit-space.
