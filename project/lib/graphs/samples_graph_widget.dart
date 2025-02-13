@@ -78,7 +78,7 @@ class SamplePainter extends CustomPainter {
       ..strokeCap = StrokeCap.square;
 
     linePaint = Paint()
-      ..color = Colors.blue.shade600
+      ..color = Colors.blue.shade300
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -113,17 +113,18 @@ class SamplePainter extends CustomPainter {
     );
 
     // Draw line value
-    polyLine.reset();
-    var (lvX, lvY) = mapPoint(0, size, lineValue, dataL, rangeStart, rangeEnd);
-    polyLine.moveTo(lvX, lvY);
-    // if (lineValue > 0.0) {
-    //   print(lvY);
-    // }
-    (lvX, lvY) =
-        mapPoint(rangeEnd, size, lineValue, dataL, rangeStart, rangeEnd);
-    polyLine.lineTo(lvX, lvY);
-    if (!lvY.isNaN) {
-      canvas.drawPath(polyLine, linePaint);
+    if (lineValue > 0.0) {
+      polyLine.reset();
+      var (lvX, lvY) =
+          mapPoint(0, size, lineValue, dataL, rangeStart, rangeEnd);
+      polyLine.moveTo(lvX, lvY);
+      // print(lvY);
+      (lvX, lvY) =
+          mapPoint(rangeEnd, size, lineValue, dataL, rangeStart, rangeEnd);
+      polyLine.lineTo(lvX, lvY);
+      if (!lvY.isNaN) {
+        canvas.drawPath(polyLine, linePaint);
+      }
     }
 
     // Draw graph

@@ -34,9 +34,7 @@ DEP and POT must decay from *surge* to 0.0 within their defined window (in milli
 
 
 # Tasks
-- Setup soma psp graph
-  - Add threshold line
-- add gui code to adjust phase of selected stimulus source.
+- (partial) add gui code to adjust phase of selected stimulus source.
 - Add parameters for triplet model. Add a gui feature such that each parameter can be locked with the other parameters. For example, if you drag A1 and A2, O1, O2 are also checked then they should drag in sync. Any parameter checked is lock/synced with the other check parameters.
 - Mean post synaptic firing rate (1) page 2 section [2].
 - Create stream input pattern that alternates between a low and high frequency pattern

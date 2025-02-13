@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -201,7 +202,12 @@ class SpikePainter extends CustomPainter {
 
     ListQueue<ValueSample> somaSamples =
         appState.samples.samplesData.somaAxon.samples[0];
+
     int rangeEnd = appProperties.rangeStart + appProperties.rangeWidth;
+    if (rangeEnd > somaSamples.length) {
+      return;
+    }
+
     if (somaSamples.isEmpty) return;
 
     for (var t = appProperties.rangeStart; t < rangeEnd; t++) {
