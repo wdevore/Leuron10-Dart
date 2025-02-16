@@ -30,6 +30,7 @@
 // When a post spike occurs we read the current trace value from a previous
 // synaptic spike.
 
+//
 import 'dart:math';
 
 import '../appstate.dart';
@@ -38,14 +39,18 @@ import 'soma.dart';
 import 'synapse.dart';
 
 class TripletSynapse extends Synapse {
+  static const double depressionStrength = 0.1;
+  static const double potentiationStrength = 5.0;
+
   // STDP traces. There are a total of 3 traces: 1 pre and 2 posts
-  ExponentialTrace preTrace = ExponentialTrace.create(40.0, 1.0);
+  ExponentialTrace preTrace = ExponentialTrace.create(40.0, depressionStrength);
 
   /// 'Fast' = y1, toa+
   ExponentialTrace postY1Trace =
-      ExponentialTrace.create(20.0, 1.0); // Tao1 < Tao2
+      ExponentialTrace.create(20.0, potentiationStrength); // Tao1 < Tao2
   /// 'Slow' = y2, toaY
-  ExponentialTrace postY2Trace = ExponentialTrace.create(70.0, 1.0);
+  ExponentialTrace postY2Trace =
+      ExponentialTrace.create(70.0, potentiationStrength);
 
   /// This provides a bit of change even if there is not spike
   /// on the synaptic input. This is random between 0.0 -> 1.0
@@ -169,7 +174,6 @@ class TripletSynapse extends Synapse {
     // Read slow-post prior
     // LTP = dep(w) * pre_expo(f) * slow_expo(f-)
     //               = w       xj(f)                    yi_2(f-)
-    // !!!!!!!!!! should o1T be tp !!!!!!!##########
     double dwPairLTP = w * preTrace.read(t - o1T) * postY2Trace.read(t - o1TP);
 
     if (soma.output == 1) {
@@ -182,7 +186,6 @@ class TripletSynapse extends Synapse {
       // reading above.
       postY1Trace.update(t);
 
-      // and previous Post
       postY2Trace.update(t);
 
       // Capture and track both time-marks

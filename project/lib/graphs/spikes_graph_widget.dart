@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -162,10 +161,6 @@ class SpikePainter extends CustomPainter {
     points.clear();
 
     double wY = 85.0;
-
-    // Iterate the noise data and map samples that are within range-start
-    // range-end. The data width should match width of the Input sample
-    // data because the noise is "mixed in" with the input samples.
 
     List<ListQueue<ValueSample>> stimulusSamples =
         appState.samples.samplesData.stimulus.samples;
