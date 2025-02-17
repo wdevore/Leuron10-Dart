@@ -3,7 +3,7 @@
 A simplified linear version of Deuron9 using Triplet STDP better.
 
 # Simulation
-Simulation works using a two step process via an input and output staging process. The first step is integration and second is propagation.
+Simulation works using a two step process via an input and output staging process. The first step is integration and second is propagation. 
 
 The simulation is continuous and runs until it is stopped. The graphs scroll from right to left showing activity as it happens.
 
