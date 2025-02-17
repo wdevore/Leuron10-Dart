@@ -30,6 +30,7 @@
 // When a post spike occurs we read the current trace value from a previous
 // synaptic spike.
 
+//
 import 'dart:math';
 
 import '../appstate.dart';
