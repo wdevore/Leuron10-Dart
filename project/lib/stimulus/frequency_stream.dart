@@ -57,6 +57,7 @@ class FrequencyStream implements IBitStream {
     if (frequency > 0) {
       period = 1.0 / frequency;
       _periodMilli = (period * 1000).toInt();
+      reset();
     }
   }
 

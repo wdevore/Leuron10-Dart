@@ -122,11 +122,6 @@ class Samples {
       0,
       soma.psp,
     );
-    // samplesData.psp.addSample(
-    //   t,
-    //   0,
-    //   soma.psp,
-    // );
   }
 
   void collectPreTrace(Synapse synapse, double t, double value) {

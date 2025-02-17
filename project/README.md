@@ -1,6 +1,6 @@
 # leuron10_dart
 
-A simplified linear version of Deuron9.
+A simplified linear version of Deuron9 using Triplet STDP.
 
 # Simulation
 Simulation works using a two step process via an input and output staging process. The first step is integration and second is propagation.
@@ -34,11 +34,11 @@ DEP and POT must decay from *surge* to 0.0 within their defined window (in milli
 
 
 # Tasks
+- Create stream input pattern that alternates between a low and high frequency pattern
+  - Also creates a gap between freq changes.
 - (partial) add gui code to adjust phase of selected stimulus source.
 - Add parameters for triplet model. Add a gui feature such that each parameter can be locked with the other parameters. For example, if you drag A1 and A2, O1, O2 are also checked then they should drag in sync. Any parameter checked is lock/synced with the other check parameters.
 - Mean post synaptic firing rate (1) page 2 section [2].
-- Create stream input pattern that alternates between a low and high frequency pattern
-  - Also creates a gap between freq changes.
 
 # Bugs
 - {Solved}: why is preTrace capping out? because if dt is the same you eventually keep adding at the same point in the trace.
