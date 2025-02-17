@@ -1,6 +1,6 @@
 # leuron10_dart
 
-A simplified linear version of Deuron9 using Triplet STDP.
+A simplified linear version of Deuron9 using Triplet STDP better.
 
 # Simulation
 Simulation works using a two step process via an input and output staging process. The first step is integration and second is propagation.
