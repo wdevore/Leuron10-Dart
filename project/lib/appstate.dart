@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'leuron_simulation.dart';
 import 'model/neuron_properties.dart';
 import 'model/app_properties.dart';
+import 'model/stimulus_properties.dart';
 import 'model/synapse_presets.dart';
 import 'samples/samples.dart';
 import '../stimulus/ibit_stream.dart';
@@ -59,6 +60,9 @@ class AppState extends ChangeNotifier {
   // Neuron model presets
   late NeuronProperties neuronProperties;
 
+  // Stimulus properties
+  late StimulusProperties stimulusProperties;
+
   late String dataPath;
 
   AppState() {
@@ -69,8 +73,12 @@ class AppState extends ChangeNotifier {
 
   void update() => notifyListeners();
 
-  void configure(String propertiesFile, String modelFile,
-      String synapsePresetsFile) async {
+  void configure(
+    String propertiesFile,
+    String modelFile,
+    String stimulusFile,
+    String synapsePresetsFile,
+  ) async {
     var filePath = p.join(Directory.current.path, propertiesFile);
     Map<String, dynamic>? map = await IoUtils.importData(filePath);
     if (map != null) {
@@ -85,6 +93,12 @@ class AppState extends ChangeNotifier {
     map = await IoUtils.importData(filePath);
     if (map != null) {
       neuronProperties = NeuronProperties.fromJson(map);
+    }
+
+    filePath = p.join(Directory.current.path, stimulusFile);
+    map = await IoUtils.importData(filePath);
+    if (map != null) {
+      stimulusProperties = StimulusProperties.fromJson(map);
     }
 
     dataPath = p.join(Directory.current.path, 'data/');

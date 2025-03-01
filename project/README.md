@@ -19,7 +19,7 @@ The simulation is continuous and runs until it is stopped. The graphs scroll fro
 
 
 ## Network simulation
-This project does not implement a network. It focuses on a single neuron.
+This project does not implement a network. It focuses on a single neuron and interneuron.
 
 However, looking forward:
 Each neuron has an Output (aka Axon). During the current step each neuron processes it's Input. At the next step each neuron's next output is asserted/placed at the axon output.
@@ -32,13 +32,37 @@ Because this simulation has only one neuron it has only inputs that are fed by "
 DEP and POT must decay from *surge* to 0.0 within their defined window (in milliseconds). Time progresses at 0.1ms per step this means, what is the decay factor per step. That is the slope of the line. If we use Lerp then we normalise *t* so it's between 0.0->1.0. As *t* moves towards 1.0 the value moves from *surge* to 0.0.
 
 
-
 # Tasks
-- Create stream input pattern that alternates between a low and high frequency pattern
-  - Also creates a gap between freq changes.
+- Add Interneuron that senses the AP rate.
+- Add ability to adjust Post trace decay rate. This should influence how APs effect weight changes over a longer period of time.
+- Add clamping to Traces to 1.0. This way A scaler is more predictable. Also, verify is Desmos how A impacts exp.
 - (partial) add gui code to adjust phase of selected stimulus source.
 - Add parameters for triplet model. Add a gui feature such that each parameter can be locked with the other parameters. For example, if you drag A1 and A2, O1, O2 are also checked then they should drag in sync. Any parameter checked is lock/synced with the other check parameters.
 - Mean post synaptic firing rate (1) page 2 section [2].
+
+## Input Streams
+Our input streams need to generate bursts of patterns that are spaced apart by a Inter Pattern Interval (IPI). The frequency of the pattern is the interval between spikes (ISI).
+
+Control parameters:
+- IPI in milliseconds (ms)
+- ISI (aka frequency) in ms
+- Pattern length. How many spikes per pattern.
+- Phase shift offset for each synapse. The offset is acumulative for each synapse, for example, the first synapse starts at 0, then 0+ps, 0+ps+ps etc.
+
+- Create stream input pattern that alternates between a low and high frequency pattern
+  - Also creates a gap between freq changes.
+```
+         /-- Period = 1/f
+       |---|                                                |----------- pattern -----------|
+___|___|___|___|___|___|___|___|___|________________________|___|___|___|___|___|___|___|___|
+_|___|___|___|___|___|___|___|___|________________________|___|___|___|___|___|___|___|___|
+___|___|___|___|___|___|___|___|___|________________________|___|___|___|___|___|___|___|___|
+                                   |                      |
+                                   |-----IPI--------------|
+```
+
+- Create a new graph that plots multiple samples on the same graph.
+  - For example, weight graph shows all synapses.
 
 # Bugs
 - {Solved}: why is preTrace capping out? because if dt is the same you eventually keep adding at the same point in the trace.

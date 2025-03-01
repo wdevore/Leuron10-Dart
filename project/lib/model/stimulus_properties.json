@@ -1,0 +1,14 @@
+{
+    "lTPorlTD": "LTP",
+    "phaseShift": 5,
+    "ltp": {
+        "period": 3,
+        "iPIInterval": 15,
+        "burstLength": 20
+    },
+    "ltd": {
+        "period": 5,
+        "iPIInterval": 30,
+        "burstLength": 20
+    }
+}

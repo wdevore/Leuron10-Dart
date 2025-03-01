@@ -4,6 +4,7 @@ enum BitStreamType {
   noise,
   stimulus,
   frequency,
+  pattern,
 }
 
 abstract class IBitStream {

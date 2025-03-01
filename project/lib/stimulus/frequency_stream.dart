@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 import '../model/neuron_properties.dart';
 import 'ibit_stream.dart';
 

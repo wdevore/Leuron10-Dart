@@ -9,6 +9,7 @@ void main() {
     ..configure(
       'lib/model/app_properties_frequency.json',
       'lib/model/neuron_properties_frequency.json',
+      'lib/model/stimulus_properties.json',
       'synapse_preset_1.json',
     );
 
