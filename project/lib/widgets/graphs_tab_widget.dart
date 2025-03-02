@@ -3,28 +3,23 @@ import 'package:flutter/material.dart';
 import '../appstate.dart';
 import 'checkbox_widget.dart';
 
-class SystemTabWidget extends StatefulWidget {
+class GraphsTabWidget extends StatefulWidget {
   final AppState appState;
 
-  const SystemTabWidget({super.key, required this.appState});
+  const GraphsTabWidget({super.key, required this.appState});
 
   @override
-  State<SystemTabWidget> createState() => _SystemTabWidgetState();
+  State<GraphsTabWidget> createState() => _GraphsTabWidgetState();
 }
 
-class _SystemTabWidgetState extends State<SystemTabWidget> {
+class _GraphsTabWidgetState extends State<GraphsTabWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
-              child: Text(
-                'Toggle Surge Graph: ',
-              ),
-            ),
             CheckboxWidget(
                 getValue: () => widget.appState.properties.graphSurge,
                 setValue: (value) {
@@ -34,9 +29,13 @@ class _SystemTabWidgetState extends State<SystemTabWidget> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
               child: Text(
-                'Toggle PSP Graph: ',
+                'Surge Graph ',
               ),
             ),
+          ],
+        ),
+        Row(
+          children: [
             CheckboxWidget(
               getValue: () => widget.appState.properties.graphPsp,
               setValue: (value) {
@@ -44,16 +43,16 @@ class _SystemTabWidgetState extends State<SystemTabWidget> {
                 widget.appState.update();
               },
             ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'PSP Graph ',
+              ),
+            ),
           ],
         ),
         Row(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
-              child: Text(
-                'Toggle preTrace Graph: ',
-              ),
-            ),
             CheckboxWidget(
                 getValue: () => widget.appState.properties.graphPreTrace,
                 setValue: (value) {
@@ -63,25 +62,29 @@ class _SystemTabWidgetState extends State<SystemTabWidget> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
               child: Text(
-                'Toggle ValueAt Graph: ',
+                'preTrace Graph ',
               ),
             ),
+          ],
+        ),
+        Row(
+          children: [
             CheckboxWidget(
                 getValue: () => widget.appState.properties.graphValueAt,
                 setValue: (value) {
                   widget.appState.properties.graphValueAt = value;
                   widget.appState.update();
                 }),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'ValueAt Graph ',
+              ),
+            ),
           ],
         ),
         Row(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
-              child: Text(
-                'Toggle PostY2Trace Graph: ',
-              ),
-            ),
             CheckboxWidget(
                 getValue: () => widget.appState.properties.graphPostY2Trace,
                 setValue: (value) {
@@ -91,15 +94,25 @@ class _SystemTabWidgetState extends State<SystemTabWidget> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
               child: Text(
-                'Toggle Weight Graph: ',
+                'PostY2Trace Graph ',
               ),
             ),
+          ],
+        ),
+        Row(
+          children: [
             CheckboxWidget(
                 getValue: () => widget.appState.properties.graphweights,
                 setValue: (value) {
                   widget.appState.properties.graphweights = value;
                   widget.appState.update();
                 }),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
+              child: Text(
+                'Weight Graph ',
+              ),
+            ),
           ],
         ),
       ],

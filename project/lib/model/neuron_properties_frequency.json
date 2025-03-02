@@ -10,5 +10,17 @@
     "noiseLambda": 500.0,
     "noiseCount": 10,
     "threshold": 3.0,
-    "refractoryPeriod": 3.0
+    "refractoryPeriod": 3.0,
+    "preXTraceParms": {
+        "a": 1.0,
+        "tao": 10.0
+    },
+    "postSlowY2TraceParms": {
+        "a": 1.0,
+        "tao": 10.0
+    },
+    "postFastY1TraceParms": {
+        "a": 1.0,
+        "tao": 10.0
+    }
 }

@@ -2,89 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:leuron10_dart/model/stimulus_properties.dart';
 
 import '../appstate.dart';
+import '../model/app_properties.dart';
 
 //
-class SimulationTabWidget extends StatefulWidget {
+class StimulationTabWidget extends StatefulWidget {
   final AppState appState;
 
-  const SimulationTabWidget({super.key, required this.appState});
+  const StimulationTabWidget({super.key, required this.appState});
 
   @override
-  State<SimulationTabWidget> createState() => _SimulationTabWidgetState();
+  State<StimulationTabWidget> createState() => _StimulationTabWidgetState();
 }
 
-class _SimulationTabWidgetState extends State<SimulationTabWidget> {
-  String? _ltpOrltd = 'LTP';
-
+class _StimulationTabWidgetState extends State<StimulationTabWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          children: <Widget>[
-            // Two radio buttons
-            Expanded(
-              child: ListTile(
-                title: const Text('LTP'),
-                leading: Radio<String>(
-                  value: 'LTP',
-                  groupValue: _ltpOrltd,
-                  onChanged: (value) {
-                    widget.appState.stimulusProperties.lTPorlTD = value!;
-                    setState(() {
-                      _ltpOrltd = value;
-                    });
-                  },
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListTile(
-                title: const Text('LTD'),
-                leading: Radio<String>(
-                  value: 'LTD',
-                  groupValue: _ltpOrltd,
-                  onChanged: (value) {
-                    widget.appState.stimulusProperties.lTPorlTD = value!;
-                    setState(() {
-                      _ltpOrltd = value;
-                    });
-                  },
-                ),
-              ),
-            )
-          ],
-        ),
+        RadioLTPLTD(appState: widget.appState),
         // Phaseshift
-        Row(
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4, 0, 5, 4),
-              child: Text(
-                'Phaseshift: ',
-              ),
-            ),
-            Text(
-              '(${widget.appState.properties.phaseShift.toString()})',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Expanded(
-              child: Slider(
-                value: widget.appState.properties.phaseShift.toDouble(),
-                min: 0,
-                max: 100,
-                divisions: 100,
-                onChanged: (value) {
-                  widget.appState.properties.phaseShift = value.toInt();
-                  // Rebuild stream for selected source.
-                  widget.appState
-                      .changePhase(widget.appState.properties.phaseShift);
-                  widget.appState.update();
-                },
-              ),
-            ),
-          ],
-        ),
+        _buildPhaseshiftSlider(widget.appState.properties, widget),
         _buildLTRegion('LTP', widget.appState.stimulusProperties.ltp, widget),
         _buildLTRegion('LTD', widget.appState.stimulusProperties.ltd, widget),
       ],
@@ -92,8 +29,63 @@ class _SimulationTabWidgetState extends State<SimulationTabWidget> {
   }
 }
 
+class RadioLTPLTD extends StatefulWidget {
+  final AppState appState;
+
+  const RadioLTPLTD({super.key, required this.appState});
+
+  @override
+  State<RadioLTPLTD> createState() => _RadioLTPLTDState();
+}
+
+class _RadioLTPLTDState extends State<RadioLTPLTD> {
+  String? _ltpOrltd;
+
+  @override
+  Widget build(BuildContext context) {
+    _ltpOrltd = widget.appState.stimulusProperties.lTPorlTD;
+
+    return Row(
+      children: <Widget>[
+        // A Flex container to force radios to bunch together in the middle.
+        // As long as the radios have a larger flex value >1.
+        Flexible(child: Container()),
+        Flexible(
+          flex: 2,
+          child: RadioListTile(
+            title: const Text('LTP'),
+            value: 'LTP',
+            groupValue: _ltpOrltd,
+            onChanged: (value) {
+              widget.appState.stimulusProperties.lTPorlTD = value!;
+              setState(() {
+                _ltpOrltd = value;
+              });
+            },
+          ),
+        ),
+        Flexible(
+          flex: 2,
+          child: RadioListTile(
+            title: const Text('LTD'),
+            value: 'LTD',
+            groupValue: _ltpOrltd,
+            onChanged: (value) {
+              widget.appState.stimulusProperties.lTPorlTD = value!;
+              setState(() {
+                _ltpOrltd = value;
+              });
+            },
+          ),
+        ),
+        Flexible(child: Container()),
+      ],
+    );
+  }
+}
+
 Widget _buildLTRegion(
-    String title, PatternProperties properties, SimulationTabWidget widget) {
+    String title, PatternProperties properties, StimulationTabWidget widget) {
   return Padding(
     // The padding adds room for the title to move "above" container
     // edge. Without it the title is clipped.
@@ -137,7 +129,7 @@ Widget _buildLTRegion(
 }
 
 Widget _buildPeriodSlider(
-    PatternProperties properties, SimulationTabWidget widget) {
+    PatternProperties properties, StimulationTabWidget widget) {
   return Row(
     children: [
       const Text('Period: '),
@@ -164,7 +156,7 @@ Widget _buildPeriodSlider(
 }
 
 Widget _buildIPISlider(
-    PatternProperties properties, SimulationTabWidget widget) {
+    PatternProperties properties, StimulationTabWidget widget) {
   return Row(
     children: [
       const Text('IPI: '),
@@ -191,7 +183,7 @@ Widget _buildIPISlider(
 }
 
 Widget _buildBurstLengthSlider(
-    PatternProperties properties, SimulationTabWidget widget) {
+    PatternProperties properties, StimulationTabWidget widget) {
   return Row(
     children: [
       const Text('Burst Length: '),
@@ -211,6 +203,43 @@ Widget _buildBurstLengthSlider(
             // Rebuild stream for selected source.
             widget.appState.update();
           },
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildPhaseshiftSlider(
+    AppProperties properties, StimulationTabWidget widget) {
+  return Row(
+    children: [
+      Flexible(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 4, 0, 4),
+          child: Row(
+            children: [
+              const Text('Phase shift: '),
+              Text(
+                '(${properties.phaseShift.toString().padLeft(3, '0')})',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Expanded(
+                child: Slider(
+                  value: properties.phaseShift.toDouble(),
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  onChanged: (value) {
+                    properties.phaseShift = value.toInt();
+                    // Rebuild stream for selected source.
+                    widget.appState
+                        .changePhase(widget.appState.properties.phaseShift);
+                    widget.appState.update();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ],

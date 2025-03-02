@@ -11,8 +11,9 @@ import '../graphs/value_at_graph_widget.dart';
 import '../samples/sample_list.dart';
 import '../samples/samples_data.dart';
 import 'global_tab_widget.dart';
-import 'simulation_tab_widget.dart';
-import 'system_tab_widget.dart';
+import 'parameters_tab_widget.dart';
+import 'stimulation_tab_widget.dart';
+import 'graphs_tab_widget.dart';
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({super.key, required this.title});
@@ -335,24 +336,40 @@ Widget _buildPspGraph(AppState appState) {
 
 Widget _buildTabBar() {
   return DefaultTabController(
-    length: 3,
+    length: 4,
     child: Column(
       children: [
         const SizedBox(
-          height: 50,
+          height: 30,
           child: TabBar(
             tabs: [
-              Text(
-                'Global',
-                style: TextStyle(fontSize: 20),
+              Tooltip(
+                message: 'Global',
+                child: Text(
+                  'Global',
+                  style: TextStyle(fontSize: 15),
+                ),
               ),
-              Text(
-                'Simulation',
-                style: TextStyle(fontSize: 20),
+              Tooltip(
+                message: 'Stimulation',
+                child: Text(
+                  'Stim',
+                  style: TextStyle(fontSize: 15),
+                ),
               ),
-              Text(
-                'System',
-                style: TextStyle(fontSize: 20),
+              Tooltip(
+                message: 'Parameters',
+                child: Text(
+                  'Params',
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
+              Tooltip(
+                message: 'Graphs',
+                child: Text(
+                  'Graphs',
+                  style: TextStyle(fontSize: 15),
+                ),
               ),
             ],
           ),
@@ -369,13 +386,19 @@ Widget _buildTabBar() {
               Consumer<AppState>(
                 builder:
                     (BuildContext context, AppState appState, Widget? child) {
-                  return SimulationTabWidget(appState: appState);
+                  return StimulationTabWidget(appState: appState);
                 },
               ),
               Consumer<AppState>(
                 builder:
                     (BuildContext context, AppState appState, Widget? child) {
-                  return SystemTabWidget(appState: appState);
+                  return ParametersTabWidget(appState: appState);
+                },
+              ),
+              Consumer<AppState>(
+                builder:
+                    (BuildContext context, AppState appState, Widget? child) {
+                  return GraphsTabWidget(appState: appState);
                 },
               ),
               // SimulationPropertiesTabWidget(appState: appState),

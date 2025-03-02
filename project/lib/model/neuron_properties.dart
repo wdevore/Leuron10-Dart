@@ -4,6 +4,23 @@ import 'package:json_annotation/json_annotation.dart';
 part 'neuron_properties.g.dart';
 
 @JsonSerializable()
+class TraceProperties with ChangeNotifier {
+  double a = 0.0;
+  double tao = 0.0;
+
+  TraceProperties();
+
+  factory TraceProperties.create() {
+    TraceProperties trace = TraceProperties();
+    return trace;
+  }
+
+  factory TraceProperties.fromJson(Map<String, dynamic> json) =>
+      _$TracePropertiesFromJson(json);
+  Map<String, dynamic> toJson() => _$TracePropertiesToJson(this);
+}
+
+@JsonSerializable()
 class NeuronProperties with ChangeNotifier {
   int synapses = 1;
   int _activeSynapse = 1;
@@ -31,10 +48,22 @@ class NeuronProperties with ChangeNotifier {
   double threshold = 0.0;
   double refractoryPeriod = 0.0;
 
-  NeuronProperties();
+  TraceProperties preXTraceParms;
+  TraceProperties postSlowY2TraceParms;
+  TraceProperties postFastY1TraceParms;
 
-  factory NeuronProperties.create() {
-    NeuronProperties neuron = NeuronProperties();
+  NeuronProperties(
+    this.preXTraceParms,
+    this.postFastY1TraceParms,
+    this.postSlowY2TraceParms,
+  );
+
+  factory NeuronProperties.create(
+      TraceProperties preXTraceParms,
+      TraceProperties postSlowY2TraceParms,
+      TraceProperties postFastY1TraceParms) {
+    NeuronProperties neuron = NeuronProperties(
+        preXTraceParms, postFastY1TraceParms, postSlowY2TraceParms);
     return neuron;
   }
 

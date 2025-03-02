@@ -4,7 +4,6 @@ import 'ibit_stream.dart';
 
 /// A [PatternStream] generates a burst of spikes. Each burst is has a length
 /// controlled by a count.
-/// Spikes are generated at a specific frequency.
 class PatternStream implements IBitStream {
   int outputSpike = 0;
 
@@ -21,6 +20,8 @@ class PatternStream implements IBitStream {
   // Once the spike count exceeds the Burst length spikes are paused until the
   // IPI interval expires, then the next burst begins.
   bool _bursting = false;
+  int burstCnt = 0;
+  int burstLength = 0; // # of spikes in a burst
 
   @override
   BitStreamType btype;
